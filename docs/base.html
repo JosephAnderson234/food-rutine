@@ -1,0 +1,1413 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#11151c" />
+    <title>Meal Prep — UTEC + Gym</title>
+    <style>
+      :root {
+        --bg: #0b0e13;
+        --panel: #131820;
+        --panel2: #191f29;
+        --line: #2a3340;
+        --text: #f1f5f9;
+        --muted: #9aa6b5;
+        --blue: #79aef8;
+        --green: #6fd39a;
+        --yellow: #f0c866;
+        --red: #ef7d7d;
+        --shadow: 0 12px 35px #0007;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: radial-gradient(circle at 20% 0%, #182131 0, #0b0e13 35%);
+        color: var(--text);
+        font:
+          15px/1.55 Inter,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+      button,
+      input {
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      .app {
+        max-width: 1180px;
+        margin: auto;
+        padding: 18px 14px 50px;
+      }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: #0b0e13ef;
+        backdrop-filter: blur(14px);
+        border-bottom: 1px solid var(--line);
+        margin: 0 -14px;
+        padding: 12px 14px;
+      }
+      .header-inner {
+        max-width: 1180px;
+        margin: auto;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .logo {
+        font-weight: 850;
+        letter-spacing: -0.4px;
+      }
+      .logo span {
+        color: var(--blue);
+      }
+      .header-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .btn {
+        border: 1px solid var(--line);
+        background: var(--panel2);
+        color: var(--text);
+        padding: 8px 11px;
+        border-radius: 10px;
+      }
+      .btn:hover {
+        border-color: #53647a;
+      }
+      .btn.primary {
+        background: #315f9d;
+        border-color: #4d80c1;
+      }
+      nav {
+        display: flex;
+        gap: 7px;
+        overflow: auto;
+        padding: 12px 0;
+        position: sticky;
+        top: 58px;
+        z-index: 15;
+        background: #0b0e13e8;
+        backdrop-filter: blur(10px);
+      }
+      nav button {
+        white-space: nowrap;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        color: var(--muted);
+        padding: 8px 12px;
+        border-radius: 999px;
+      }
+      nav button.active {
+        background: #233b5c;
+        color: #dcecff;
+        border-color: #4d78aa;
+      }
+      section {
+        display: none;
+        animation: fade 0.15s ease;
+      }
+      .active-section {
+        display: block;
+      }
+      @keyframes fade {
+        from {
+          opacity: 0.4;
+          transform: translateY(3px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .hero {
+        padding: 28px 0 18px;
+      }
+      .eyebrow {
+        color: var(--blue);
+        font-weight: 800;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+      h1 {
+        font-size: clamp(29px, 5vw, 48px);
+        line-height: 1.03;
+        margin: 8px 0 12px;
+        letter-spacing: -1.5px;
+      }
+      h2 {
+        font-size: 25px;
+        margin: 30px 0 12px;
+      }
+      .subtitle {
+        color: var(--muted);
+        max-width: 800px;
+        font-size: 16px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 12px;
+      }
+      .card {
+        background: linear-gradient(145deg, var(--panel), #11161d);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 17px;
+        box-shadow: 0 6px 20px #0002;
+      }
+      .card h3 {
+        margin: 0 0 8px;
+      }
+      .blue {
+        border-left: 4px solid var(--blue);
+      }
+      .green {
+        border-left: 4px solid var(--green);
+      }
+      .yellow {
+        border-left: 4px solid var(--yellow);
+      }
+      .red {
+        border-left: 4px solid var(--red);
+      }
+      .kpi {
+        font-size: 27px;
+        font-weight: 850;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+      th,
+      td {
+        padding: 11px 12px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+        text-align: left;
+      }
+      th {
+        background: #1b222c;
+        color: #dbe8fa;
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      .checklist {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .checklist li {
+        margin: 7px 0;
+      }
+      .check {
+        display: flex;
+        gap: 9px;
+        align-items: flex-start;
+      }
+      .check input {
+        margin-top: 4px;
+        accent-color: var(--green);
+      }
+      .check.done label {
+        text-decoration: line-through;
+        color: #6f7b8a;
+      }
+      .recipe {
+        margin: 14px 0;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 18px;
+      }
+      .recipe h3 {
+        margin-top: 0;
+      }
+      .cols {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      ol,
+      ul {
+        padding-left: 22px;
+      }
+      li {
+        margin: 6px 0;
+      }
+      .note {
+        background: #101923;
+        border: 1px solid #29405a;
+        border-radius: 12px;
+        padding: 13px;
+        color: #d7e5f5;
+      }
+      .warn {
+        background: #21191a;
+        border: 1px solid #573235;
+        border-radius: 12px;
+        padding: 13px;
+      }
+      .good {
+        background: #102018;
+        border: 1px solid #29543d;
+        border-radius: 12px;
+        padding: 13px;
+      }
+      .tag {
+        display: inline-block;
+        border: 1px solid var(--line);
+        background: #202833;
+        border-radius: 999px;
+        padding: 3px 8px;
+        font-size: 12px;
+        color: #c7d6e9;
+      }
+      .progress {
+        height: 9px;
+        background: #252d37;
+        border-radius: 99px;
+        overflow: hidden;
+      }
+      .bar {
+        height: 100%;
+        background: var(--green);
+        width: 0;
+        transition: 0.2s;
+      }
+      .progress-row {
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 13px;
+        margin: 8px 0;
+      }
+      details {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px;
+        margin: 8px 0;
+      }
+      summary {
+        cursor: pointer;
+        font-weight: 750;
+      }
+      footer {
+        color: var(--muted);
+        font-size: 12px;
+        border-top: 1px solid var(--line);
+        margin-top: 40px;
+        padding-top: 20px;
+      }
+      @media (max-width: 720px) {
+        .cols {
+          grid-template-columns: 1fr;
+        }
+        th,
+        td {
+          font-size: 13px;
+          padding: 9px;
+        }
+        .header-actions .btn span {
+          display: none;
+        }
+      }
+      @media print {
+        header,
+        nav,
+        .header-actions {
+          display: none !important;
+        }
+        section {
+          display: block !important;
+        }
+        .card,
+        .recipe,
+        table {
+          box-shadow: none;
+          break-inside: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-inner">
+        <div class="logo">🍱 <span>Meal Prep</span> UTEC + Gym</div>
+        <div class="header-actions">
+          <button class="btn" onclick="resetProgress()">
+            ↺ <span>Reset</span>
+          </button>
+          <button class="btn primary" onclick="window.print()">
+            🖨 <span>Imprimir</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="app">
+      <nav id="nav">
+        <button data-tab="inicio" class="active">Inicio</button>
+        <button data-tab="equipo">Qué necesitas</button>
+        <button data-tab="compra">Compra</button>
+        <button data-tab="domingo">Domingo</button>
+        <button data-tab="miercoles">Miércoles</button>
+        <button data-tab="llevar">Llevar a la U</button>
+        <button data-tab="semana">Semana</button>
+        <button data-tab="seguridad">Seguridad</button>
+      </nav>
+
+      <section id="inicio" class="active-section">
+        <div class="hero">
+          <div class="eyebrow">App portátil · funciona sin internet</div>
+          <h1>Tu sistema semanal de comida.</h1>
+          <p class="subtitle">
+            Dos sesiones de cocina, tres días de gym y comida lista para los
+            días pesados. Marca las tareas y el progreso queda guardado en este
+            navegador.
+          </p>
+        </div>
+        <div class="grid">
+          <div class="card blue">
+            <div class="kpi">2×</div>
+            <b>Meal prep</b>
+            <p class="muted">Domingo y miércoles por la noche.</p>
+          </div>
+          <div class="card green">
+            <div class="kpi">3×</div>
+            <b>Gym</b>
+            <p class="muted">Lunes, jueves y sábado como horario base.</p>
+          </div>
+          <div class="card yellow">
+            <div class="kpi">0×</div>
+            <b>Cocinar en días pesados</b>
+            <p class="muted">Lunes y martes: solo calentar/armar.</p>
+          </div>
+        </div>
+
+        <h2>Regla de la semana</h2>
+        <div class="card">
+          <ol>
+            <li>
+              <b>Domingo:</b> pollo + arroz + verduras para lunes–miércoles.
+            </li>
+            <li>
+              <b>Miércoles:</b> carne molida + arroz/pasta + verduras para
+              jueves–sábado.
+            </li>
+            <li>
+              <b>Universidad:</b> lleva la comida en un
+              <b
+                >taper hermético dentro de una lonchera térmica con 2
+                acumuladores de frío</b
+              >.
+            </li>
+            <li>
+              <b>Gym:</b> no necesitas cocinar después. La comida ya está lista.
+            </li>
+            <li>
+              <b>Semana pesada:</b> los bloques de trabajos son movibles; el
+              meal prep y el sueño son tu infraestructura.
+            </li>
+          </ol>
+        </div>
+
+        <h2>Progreso actual</h2>
+        <div class="progress-row">
+          <span id="progressText">0 tareas completadas</span
+          ><span id="progressPct">0%</span>
+        </div>
+        <div class="progress"><div class="bar" id="progressBar"></div></div>
+      </section>
+
+      <section id="equipo">
+        <h2>Qué necesitas comprar exactamente</h2>
+        <p class="subtitle">
+          La idea es que no tengas que interpretar “un recipiente”. Estas son
+          especificaciones prácticas y económicas.
+        </p>
+
+        <div class="grid">
+          <div class="card green">
+            <h3>🍱 6–8 táperes herméticos</h3>
+            <p>
+              <b>Tipo:</b> recipiente para alimentos de plástico PP5
+              (polipropileno), apto para alimentos, con tapa de cierre
+              hermético.
+            </p>
+            <p>
+              <b>Capacidad:</b> 700–1000 ml para una comida principal.
+              Idealmente 750–900 ml.
+            </p>
+            <p>
+              <b>Forma:</b> rectangular y relativamente plana; apila mejor en la
+              refrigeradora y en la lonchera.
+            </p>
+            <p>
+              <b>Extra:</b> aptos para refrigeradora/congelador y, si lo indica
+              el fabricante, microondas.
+            </p>
+          </div>
+          <div class="card blue">
+            <h3>🥣 4 recipientes pequeños</h3>
+            <p><b>Capacidad:</b> 60–120 ml, con tapa hermética.</p>
+            <p>
+              Para sillao, salsa de tomate, ají, yogurt, frutos secos o pequeñas
+              porciones de aderezo.
+            </p>
+          </div>
+          <div class="card yellow">
+            <h3>🧊 1 lonchera térmica</h3>
+            <p>
+              Busca una lonchera con <b>aislamiento térmico</b>, cierre completo
+              y espacio suficiente para 1–2 táperes.
+            </p>
+            <p>
+              Debe poder llevarse dentro de una mochila sin que los recipientes
+              queden inclinados.
+            </p>
+          </div>
+          <div class="card blue">
+            <h3>❄️ 2 acumuladores de frío</h3>
+            <p>
+              Gel packs reutilizables, preferiblemente planos. Congélalos la
+              noche anterior.
+            </p>
+            <p>
+              Son especialmente útiles cuando vas a estar varias horas fuera de
+              casa antes de refrigerar la comida.
+            </p>
+          </div>
+          <div class="card">
+            <h3>🍴 Cubiertos reutilizables</h3>
+            <p>
+              Un tenedor/cuchara reutilizable dentro de un estuche o bolsa
+              lavable.
+            </p>
+          </div>
+          <div class="card">
+            <h3>🏷️ Etiquetas</h3>
+            <p>
+              Cinta de masking tape + plumón indeleble funciona perfecto.
+              Escribe <b>“pollo — lun”</b> o <b>“carne — jue”</b>.
+            </p>
+          </div>
+        </div>
+
+        <div class="note" style="margin-top: 15px">
+          <b>Configuración mínima:</b> 6 táperes grandes + 4 pequeños + 1
+          lonchera térmica + 2 gel packs + cubiertos reutilizables + cinta y
+          plumón. No necesitas comprar una “meal prep set” caro.
+        </div>
+
+        <h2>Otros utensilios que ya tienes</h2>
+        <div class="grid">
+          <div class="card">
+            <b>🍚 Olla arrocera</b>
+            <p>
+              Arroz y, según el manual de tu modelo, otras preparaciones
+              compatibles.
+            </p>
+          </div>
+          <div class="card">
+            <b>🥘 Wok pequeño</b>
+            <p>Pollo/carne en tandas, verduras y chaufa.</p>
+          </div>
+          <div class="card">
+            <b>🍳 Sartén plana</b>
+            <p>Huevos, tortillas y pequeñas cantidades de carne/verduras.</p>
+          </div>
+          <div class="card">
+            <b>🔪 Cuchillo + tabla</b>
+            <p>
+              Imprescindibles para cortar pollo, verduras y cebolla. Si tienes
+              una tabla exclusiva para carnes, mejor.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="compra">
+        <h2>Lista de compras</h2>
+        <p>
+          Marca lo que ya tienes. La lista está pensada para una semana de
+          referencia y puede ajustarse a tu hambre/presupuesto.
+        </p>
+        <div class="cols">
+          <div class="card">
+            <h3>Proteínas</h3>
+            <ul class="checklist">
+              <li>
+                <label class="check"
+                  ><input data-check="buy-pollo" type="checkbox" /><span
+                    >1–1.2 kg de pollo</span
+                  ></label
+                >
+              </li>
+              <li>
+                <label class="check"
+                  ><input data-check="buy-carne" type="checkbox" /><span
+                    >800 g–1 kg de carne molida</span
+                  ></label
+                >
+              </li>
+              <li>
+                <label class="check"
+                  ><input data-check="buy-huevos" type="checkbox" /><span
+                    >10–12 huevos</span
+                  ></label
+                >
+              </li>
+              <li>
+                <label class="check"
+                  ><input data-check="buy-atun" type="checkbox" /><span
+                    >2–3 latas de atún</span
+                  ></label
+                >
+              </li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Carbohidratos</h3>
+            <ul class="checklist">
+              <li>
+                <label class="check"
+                  ><input data-check="buy-arroz" type="checkbox" /><span
+                    >Arroz</span
+                  ></label
+                >
+              </li>
+              <li>
+                <label class="check"
+                  ><input data-check="buy-pasta" type="checkbox" /><span
+                    >Pasta</span
+                  ></label
+                >
+              </li>
+              <li>
+                <label class="check"
+                  ><input data-check="buy-papa" type="checkbox" /><span
+                    >Papa o camote</span
+                  ></label
+                >
+              </li>
+              <li>
+                <label class="check"
+                  ><input data-check="buy-avena" type="checkbox" /><span
+                    >Avena</span
+                  ></label
+                >
+              </li>
+              <li>
+                <label class="check"
+                  ><input data-check="buy-pan" type="checkbox" /><span
+                    >Pan</span
+                  ></label
+                >
+              </li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Verduras</h3>
+            <ul class="checklist">
+              <li>
+                <label class="check"
+                  ><input data-check="buy-cebolla" type="checkbox" /><span
+                    >2–3 cebollas</span
+                  ></label
+                >
+              </li>
+              <li>
+                <label class="check"
+                  ><input data-check="buy-zanahoria" type="checkbox" /><span
+                    >3–4 zanahorias</span
+                  ></label
+                >
+              </li>
+              <li>
+                <label class="check"
+                  ><input data-check="buy-brocoli" type="checkbox" /><span
+                    >1 brócoli</span
+                  ></label
+                >
+              </li>
+              <li>
+                <label class="check"
+                  ><input data-check="buy-tomate" type="checkbox" /><span
+                    >Tomate</span
+                  ></label
+                >
+              </li>
+              <li>
+                <label class="check"
+                  ><input data-check="buy-pimiento" type="checkbox" /><span
+                    >Pimiento (opcional)</span
+                  ></label
+                >
+              </li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Fruta y básicos</h3>
+            <ul class="checklist">
+              <li>
+                <label class="check"
+                  ><input data-check="buy-platano" type="checkbox" /><span
+                    >Plátanos</span
+                  ></label
+                >
+              </li>
+              <li>
+                <label class="check"
+                  ><input data-check="buy-fruta" type="checkbox" /><span
+                    >Manzana/mandarina</span
+                  ></label
+                >
+              </li>
+              <li>
+                <label class="check"
+                  ><input data-check="buy-ajo" type="checkbox" /><span
+                    >Ajo</span
+                  ></label
+                >
+              </li>
+              <li>
+                <label class="check"
+                  ><input data-check="buy-aceite" type="checkbox" /><span
+                    >Aceite</span
+                  ></label
+                >
+              </li>
+              <li>
+                <label class="check"
+                  ><input data-check="buy-sillao" type="checkbox" /><span
+                    >Sillao</span
+                  ></label
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+        <h2>Condimentos</h2>
+        <div class="card">
+          <p>
+            Sal · pimienta · paprika · comino · orégano · ajo en polvo
+            (opcional) · sillao · ají/pasta de ají (opcional).
+          </p>
+        </div>
+      </section>
+
+      <section id="domingo">
+        <h2>🍳 Domingo — meal prep para lunes, martes y miércoles</h2>
+        <p class="subtitle">
+          Tiempo objetivo: 1 h 45 min–2 h 30 min. No busques velocidad; busca
+          hacer varias cosas en paralelo.
+        </p>
+
+        <div class="card">
+          <h3>Antes de encender el fuego</h3>
+          <ul class="checklist">
+            <li>
+              <label class="check"
+                ><input data-check="sun-tapers" type="checkbox" /><span
+                  >Lavar y secar 3–4 táperes herméticos grandes y 2
+                  pequeños.</span
+                ></label
+              >
+            </li>
+            <li>
+              <label class="check"
+                ><input data-check="sun-board" type="checkbox" /><span
+                  >Separar tabla/cuchillo para pollo y otra superficie para
+                  alimentos listos, si tienes.</span
+                ></label
+              >
+            </li>
+            <li>
+              <label class="check"
+                ><input data-check="sun-veg" type="checkbox" /><span
+                  >Lavar verduras y preparar cebolla, zanahoria y brócoli.</span
+                ></label
+              >
+            </li>
+            <li>
+              <label class="check"
+                ><input data-check="sun-chicken" type="checkbox" /><span
+                  >Cortar 1–1.2 kg de pollo en cubos uniformes.</span
+                ></label
+              >
+            </li>
+            <li>
+              <label class="check"
+                ><input data-check="sun-rice" type="checkbox" /><span
+                  >Medir y lavar el arroz.</span
+                ></label
+              >
+            </li>
+          </ul>
+        </div>
+
+        <div class="recipe">
+          <h3>1. 🍚 Arroz en la olla arrocera</h3>
+          <ol>
+            <li>Lava el arroz 2–3 veces.</li>
+            <li>
+              Agrega arroz y agua según la proporción que funcione con el arroz
+              que compras y la referencia de tu arrocera.
+            </li>
+            <li>
+              Enciende la arrocera y déjala trabajar mientras cocinas el pollo.
+            </li>
+            <li>Al terminar, esponja el arroz con la paleta.</li>
+            <li>
+              <b>No dejes todo el arroz horas en “keep warm”:</b> para meal
+              prep, pásalo a recipientes bajos y enfríalo/refrigéralo pronto.
+            </li>
+          </ol>
+        </div>
+
+        <div class="recipe">
+          <h3>2. 🍗 Pollo salteado en el wok</h3>
+          <p>
+            <b>Ingredientes:</b> 1–1.2 kg pollo, 1 cebolla, 2–3 dientes de ajo,
+            aceite, sal, pimienta, paprika, comino y sillao.
+          </p>
+          <ol>
+            <li>Seca el pollo con papel si está muy húmedo.</li>
+            <li>Condimenta con sal, pimienta, paprika y un poco de comino.</li>
+            <li>Calienta el wok a fuego medio-alto.</li>
+            <li>Agrega 1 cucharadita de aceite.</li>
+            <li>
+              Coloca solo una capa de pollo.
+              <b>Tu wok es pequeño: trabaja por tandas.</b>
+            </li>
+            <li>
+              Dora y remueve hasta que el centro esté completamente cocido. Si
+              tienes termómetro, busca <b>74 °C / 165 °F</b>.
+            </li>
+            <li>
+              Retira el pollo cocido a un recipiente limpio. Repite con el
+              resto.
+            </li>
+            <li>Agrega cebolla + ajo al wok y saltea.</li>
+            <li>Devuelve parte del pollo y agrega un poco de sillao.</li>
+            <li>Divide el pollo en 3–4 porciones.</li>
+          </ol>
+        </div>
+
+        <div class="recipe">
+          <h3>3. 🥦 Verduras</h3>
+          <ol>
+            <li>Primero zanahoria con un poco de aceite.</li>
+            <li>Agrega brócoli.</li>
+            <li>
+              Añade un chorrito pequeño de agua y tapa si tienes una tapa
+              compatible.
+            </li>
+            <li>Después agrega cebolla/pimiento.</li>
+            <li>
+              Saltea hasta que estén cocidos pero no completamente blandos.
+            </li>
+            <li>
+              Condimenta suavemente para poder reutilizarlos en diferentes
+              platos.
+            </li>
+          </ol>
+        </div>
+
+        <div class="recipe">
+          <h3>4. 🍱 Montaje de los táperes</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Taper</th>
+                <th>Qué poner</th>
+                <th>Etiqueta</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Grande #1</td>
+                <td>Arroz + pollo + verduras</td>
+                <td>“Lun — pollo”</td>
+              </tr>
+              <tr>
+                <td>Grande #2</td>
+                <td>Arroz + pollo + verduras</td>
+                <td>“Mar — pollo”</td>
+              </tr>
+              <tr>
+                <td>Grande #3</td>
+                <td>Arroz + pollo + verduras</td>
+                <td>“Mié — pollo”</td>
+              </tr>
+              <tr>
+                <td>Pequeño #1</td>
+                <td>Sillao/ají/aderezo</td>
+                <td>“Salsa”</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="note">
+            <b>Mejor opción:</b> si tienes espacio, guarda arroz y pollo
+            separados. Así el martes puedes hacer chaufa sin volver a cocinar
+            todo.
+          </p>
+        </div>
+
+        <div class="good">
+          <b>🧊 Enfriado:</b> no cierres una olla enorme de comida caliente y la
+          metas al refrigerador. Divide en recipientes poco profundos. Deja que
+          el vapor excesivo disminuya brevemente y refrigera dentro de las 2
+          horas posteriores a cocinar.
+        </div>
+      </section>
+
+      <section id="miercoles">
+        <h2>🍳 Miércoles — meal prep para jueves, viernes y sábado</h2>
+        <p>
+          Después de tus clases: cena/descanso primero si estás cansado; luego
+          reserva aproximadamente 1–1.5 h para la segunda tanda.
+        </p>
+
+        <div class="recipe">
+          <h3>1. 🥩 Carne molida base</h3>
+          <p>
+            <b>Ingredientes:</b> 800 g–1 kg carne molida, cebolla, ajo, sal,
+            pimienta, comino, paprika y sillao.
+          </p>
+          <ol>
+            <li>Calienta el wok/sartén.</li>
+            <li>
+              Agrega la carne en 2–3 tandas para evitar que el recipiente se
+              llene de agua.
+            </li>
+            <li>Desmenuza con la espátula.</li>
+            <li>Deja evaporar el líquido y permite que la carne se dore.</li>
+            <li>Agrega cebolla y ajo.</li>
+            <li>Condimenta.</li>
+            <li>Cocina hasta <b>71 °C / 160 °F</b> si tienes termómetro.</li>
+            <li>Termina con un poco de sillao.</li>
+            <li>Divide en 3–4 porciones.</li>
+          </ol>
+        </div>
+
+        <div class="recipe">
+          <h3>2. 🍝 Pasta</h3>
+          <ol>
+            <li>Cocina la pasta según el paquete.</li>
+            <li>Escúrrela bien.</li>
+            <li>Agrega una pequeña cantidad de aceite para que no se pegue.</li>
+            <li>Guarda la pasta en un taper hermético.</li>
+            <li>
+              Si tienes salsa de tomate, guárdala en un recipiente pequeño
+              separado para mejorar la textura al recalentar.
+            </li>
+          </ol>
+        </div>
+
+        <div class="recipe">
+          <h3>3. Combinaciones</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Día</th>
+                <th>Comida</th>
+                <th>Cómo terminarla</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Jueves</td>
+                <td>Carne + arroz + verduras</td>
+                <td>Microondas o sartén/wok; huevo opcional.</td>
+              </tr>
+              <tr>
+                <td>Viernes</td>
+                <td>Pasta + carne + tomate</td>
+                <td>Calentar y mezclar.</td>
+              </tr>
+              <tr>
+                <td>Sábado</td>
+                <td>Bowl de arroz + carne + verduras</td>
+                <td>Agregar huevo recién hecho.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="llevar">
+        <h2>🎒 Cómo llevar la comida a la U</h2>
+        <div class="warn">
+          <b
+            >No lleves un taper con comida perecible suelto dentro de la mochila
+            durante horas.</b
+          >
+          Usa una lonchera térmica y acumuladores de frío si no tendrás
+          refrigeración inmediata.
+        </div>
+
+        <div class="recipe">
+          <h3>Configuración exacta</h3>
+          <ol>
+            <li><b>La noche anterior:</b> congela 2 gel packs planos.</li>
+            <li>
+              <b>En la mañana:</b> toma el taper ya frío de la refrigeradora.
+            </li>
+            <li>
+              Mete el taper <b>cerrado herméticamente</b> dentro de la lonchera
+              térmica.
+            </li>
+            <li>
+              Coloca <b>un gel pack debajo y otro encima/al lado</b> del taper,
+              sin que la tapa pueda abrirse.
+            </li>
+            <li>
+              Agrega el recipiente pequeño de salsa y los cubiertos en un
+              bolsillo separado.
+            </li>
+            <li>Cierra completamente la lonchera y métela en la mochila.</li>
+            <li>
+              En la U, si existe una refrigeradora destinada a
+              estudiantes/personal, coloca la comida allí al llegar. Si no
+              existe, mantén la lonchera cerrada y con los gel packs.
+            </li>
+            <li>
+              Cuando llegue la hora de comer, calienta la comida hasta que esté
+              bien caliente si tienes microondas.
+            </li>
+            <li>
+              <b
+                >No vuelvas a guardar como “comida para mañana” una porción que
+                ya estuvo varias horas fuera y fue calentada.</b
+              >
+            </li>
+          </ol>
+        </div>
+
+        <h2>Qué llevar según el día</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Día</th>
+              <th>En la mochila</th>
+              <th>Momento recomendado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Lunes</td>
+              <td>1 taper + 1 pequeño de salsa + cubiertos + 2 gel packs</td>
+              <td>Almuerzo después de clases.</td>
+            </tr>
+            <tr>
+              <td>Martes</td>
+              <td>1 taper con arroz/pollo + huevo/salsa según plan</td>
+              <td>Almuerzo o cena según tus huecos.</td>
+            </tr>
+            <tr>
+              <td>Miércoles</td>
+              <td>1 taper + snack</td>
+              <td>Almuerzo antes de las clases de la tarde.</td>
+            </tr>
+            <tr>
+              <td>Jueves</td>
+              <td>1 taper</td>
+              <td>Almuerzo temprano después de ML o antes del gym.</td>
+            </tr>
+            <tr>
+              <td>Viernes</td>
+              <td>1 taper</td>
+              <td>Almuerzo alrededor de tu clase de 1–3.</td>
+            </tr>
+            <tr>
+              <td>Sábado</td>
+              <td>Normalmente puedes comer en casa</td>
+              <td>Gym por la mañana; comida después.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>Kit de mochila</h2>
+        <ul class="checklist">
+          <li>
+            <label class="check"
+              ><input data-check="bag-taper" type="checkbox" /><span
+                >☐ Taper hermético 700–1000 ml.</span
+              ></label
+            >
+          </li>
+          <li>
+            <label class="check"
+              ><input data-check="bag-lunch" type="checkbox" /><span
+                >☐ Lonchera térmica con cierre.</span
+              ></label
+            >
+          </li>
+          <li>
+            <label class="check"
+              ><input data-check="bag-ice" type="checkbox" /><span
+                >☐ 2 acumuladores de frío congelados.</span
+              ></label
+            >
+          </li>
+          <li>
+            <label class="check"
+              ><input data-check="bag-sauce" type="checkbox" /><span
+                >☐ Taper pequeño para salsa/aderezo.</span
+              ></label
+            >
+          </li>
+          <li>
+            <label class="check"
+              ><input data-check="bag-cutlery" type="checkbox" /><span
+                >☐ Cubiertos reutilizables.</span
+              ></label
+            >
+          </li>
+          <li>
+            <label class="check"
+              ><input data-check="bag-napkin" type="checkbox" /><span
+                >☐ Servilleta.</span
+              ></label
+            >
+          </li>
+        </ul>
+      </section>
+
+      <section id="semana">
+        <h2>📅 Tu semana de comida</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Día</th>
+              <th>Desayuno</th>
+              <th>Almuerzo</th>
+              <th>Cena</th>
+              <th>Gym</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Lun</b></td>
+              <td>Avena + plátano</td>
+              <td>🍗 Pollo + arroz + verduras</td>
+              <td>Pollo + arroz / papa</td>
+              <td>5–7 PM</td>
+            </tr>
+            <tr>
+              <td><b>Mar</b></td>
+              <td>Huevos + pan + fruta</td>
+              <td>🍗 Pollo + arroz</td>
+              <td>🍳 Chaufa de pollo</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><b>Mié</b></td>
+              <td>Avena/yogurt + fruta</td>
+              <td>🍗 Pollo + verduras + arroz</td>
+              <td>🥩 Carne + arroz</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><b>Jue</b></td>
+              <td>Huevos + pan + fruta</td>
+              <td>🥩 Carne + arroz + verduras</td>
+              <td>Carne + arroz/papa</td>
+              <td>3–5 PM</td>
+            </tr>
+            <tr>
+              <td><b>Vie</b></td>
+              <td>Avena + plátano</td>
+              <td>🍝 Pasta + carne</td>
+              <td>Bowl de carne</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><b>Sáb</b></td>
+              <td>Desayuno después del gym</td>
+              <td>🍚 Bowl de carne + huevo</td>
+              <td>Flexible</td>
+              <td>Mañana</td>
+            </tr>
+            <tr>
+              <td><b>Dom</b></td>
+              <td>Flexible</td>
+              <td>Flexible</td>
+              <td>Meal prep</td>
+              <td>Descanso</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="muted">
+          Esto es una plantilla, no una dieta rígida. Si tienes hambre
+          antes/después del gym, añade un snack o aumenta la porción de
+          carbohidratos/proteína.
+        </p>
+
+        <h2>🏋️ Gym</h2>
+        <div class="grid">
+          <div class="card green">
+            <h3>Lunes · 5–7 PM</h3>
+            <p>Ideal porque termina tu bloque fijo de clases a las 4 PM.</p>
+          </div>
+          <div class="card green">
+            <h3>Jueves · 3–5 PM</h3>
+            <p>
+              Después de tu única clase de la mañana tienes un bloque enorme
+              para trabajos antes/después.
+            </p>
+          </div>
+          <div class="card green">
+            <h3>Sábado · mañana</h3>
+            <p>
+              Te deja la tarde libre y no interfiere con tus días académicamente
+              pesados.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="seguridad">
+        <h2>❄️ Seguridad y almacenamiento</h2>
+        <div class="warn">
+          <b>Reglas prácticas:</b>
+          <ul>
+            <li>
+              Refrigera o congela los alimentos perecibles dentro de
+              <b>2 horas</b> de haberlos cocinado/servidos; si la temperatura
+              ambiente supera aproximadamente 32 °C, usa 1 hora como límite.
+            </li>
+            <li>Mantén la refrigeradora a <b>4 °C o menos</b>.</li>
+            <li>
+              Las sobras refrigeradas se deben consumir normalmente en
+              <b>3–4 días</b>.
+            </li>
+            <li>Para más tiempo, congela.</li>
+            <li>
+              Usa recipientes poco profundos para acelerar el enfriamiento.
+            </li>
+            <li>No mezcles comida nueva y vieja en el mismo taper.</li>
+            <li>
+              Si algo huele extraño, presenta moho o tienes dudas sobre cuánto
+              tiempo estuvo a temperatura ambiente, <b>descártalo</b>.
+            </li>
+          </ul>
+        </div>
+
+        <h2>🧊 Qué refrigerar y qué congelar</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Preparación</th>
+              <th>Plan</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Pollo del domingo</td>
+              <td>
+                Refrigerar porciones para lunes/martes; congelar la de miércoles
+                si prefieres margen.
+              </td>
+            </tr>
+            <tr>
+              <td>Arroz del domingo</td>
+              <td>
+                Repartir en recipientes pequeños y refrigerar pronto; congelar
+                si no se usará dentro del plazo.
+              </td>
+            </tr>
+            <tr>
+              <td>Carne del miércoles</td>
+              <td>
+                Refrigerar para jueves/viernes; congelar la porción del sábado
+                si quieres máxima seguridad/holgura.
+              </td>
+            </tr>
+            <tr>
+              <td>Pasta</td>
+              <td>
+                Refrigerar y usar dentro del mismo plazo general de sobras.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>🔁 Cómo descongelar</h2>
+        <ol>
+          <li>
+            La noche anterior, mueve el taper congelado del congelador al
+            refrigerador.
+          </li>
+          <li>Déjalo descongelar allí durante la noche.</li>
+          <li>
+            Al día siguiente, llévalo frío dentro de la lonchera térmica con los
+            gel packs.
+          </li>
+          <li>Calienta completamente cuando vayas a comer.</li>
+        </ol>
+
+        <h2>📌 Checklist semanal</h2>
+        <div class="card">
+          <ul class="checklist">
+            <li>
+              <label class="check"
+                ><input data-check="week-shop" type="checkbox" /><span
+                  >Comprar ingredientes.</span
+                ></label
+              >
+            </li>
+            <li>
+              <label class="check"
+                ><input data-check="week-sun" type="checkbox" /><span
+                  >Meal prep domingo.</span
+                ></label
+              >
+            </li>
+            <li>
+              <label class="check"
+                ><input data-check="week-mon" type="checkbox" /><span
+                  >Preparar lonchera del lunes.</span
+                ></label
+              >
+            </li>
+            <li>
+              <label class="check"
+                ><input data-check="week-tue" type="checkbox" /><span
+                  >Preparar lonchera del martes.</span
+                ></label
+              >
+            </li>
+            <li>
+              <label class="check"
+                ><input data-check="week-wed" type="checkbox" /><span
+                  >Meal prep miércoles.</span
+                ></label
+              >
+            </li>
+            <li>
+              <label class="check"
+                ><input data-check="week-thu" type="checkbox" /><span
+                  >Preparar lonchera del jueves.</span
+                ></label
+              >
+            </li>
+            <li>
+              <label class="check"
+                ><input data-check="week-fri" type="checkbox" /><span
+                  >Preparar lonchera del viernes.</span
+                ></label
+              >
+            </li>
+            <li>
+              <label class="check"
+                ><input data-check="week-sat" type="checkbox" /><span
+                  >Gym sábado + comida post-gym.</span
+                ></label
+              >
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <footer>
+        App portable de un solo archivo HTML: no necesita instalación, servidor,
+        npm ni internet para funcionar. Las casillas se guardan automáticamente
+        en el navegador mediante localStorage.
+        <br /><br />
+        Seguridad alimentaria: orientación basada en USDA FSIS sobre
+        refrigeración y manejo de sobras. Las cantidades de comida son
+        orientativas y deben ajustarse a hambre, actividad, objetivos y
+        presupuesto.
+      </footer>
+    </div>
+
+    <script>
+      const tabs = [...document.querySelectorAll("nav button")];
+      const sections = [...document.querySelectorAll("section")];
+
+      function showTab(id) {
+        tabs.forEach((b) => b.classList.toggle("active", b.dataset.tab === id));
+        sections.forEach((s) =>
+          s.classList.toggle("active-section", s.id === id),
+        );
+        history.replaceState(null, "", "#" + id);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      tabs.forEach((b) =>
+        b.addEventListener("click", () => showTab(b.dataset.tab)),
+      );
+
+      function saveChecks() {
+        document.querySelectorAll("input[data-check]").forEach((input) => {
+          localStorage.setItem(
+            "mealprep:" + input.dataset.check,
+            input.checked ? "1" : "0",
+          );
+        });
+        updateProgress();
+      }
+      function loadChecks() {
+        document.querySelectorAll("input[data-check]").forEach((input) => {
+          input.checked =
+            localStorage.getItem("mealprep:" + input.dataset.check) === "1";
+          input.addEventListener("change", () => {
+            const label = input.closest("label");
+            if (label) label.classList.toggle("done", input.checked);
+            saveChecks();
+          });
+          const label = input.closest("label");
+          if (label) label.classList.toggle("done", input.checked);
+        });
+        updateProgress();
+      }
+      function updateProgress() {
+        const all = [...document.querySelectorAll("input[data-check]")];
+        const done = all.filter((x) => x.checked).length;
+        const pct = all.length ? Math.round((done / all.length) * 100) : 0;
+        document.getElementById("progressText").textContent =
+          done + " de " + all.length + " tareas completadas";
+        document.getElementById("progressPct").textContent = pct + "%";
+        document.getElementById("progressBar").style.width = pct + "%";
+      }
+      function resetProgress() {
+        if (!confirm("¿Borrar todas las casillas guardadas?")) return;
+        document.querySelectorAll("input[data-check]").forEach((x) => {
+          localStorage.removeItem("mealprep:" + x.dataset.check);
+          x.checked = false;
+          const label = x.closest("label");
+          if (label) label.classList.remove("done");
+        });
+        updateProgress();
+      }
+      const initial = location.hash.replace("#", "");
+      if (initial && document.getElementById(initial)) showTab(initial);
+      loadChecks();
+    </script>
+  </body>
+</html>
