@@ -188,6 +188,15 @@ export interface Settings {
   rotation: string[];
   /** 1 = todo el domingo; 2 = una compra antes de cada meal prep (por defecto). */
   shoppingTrips?: 1 | 2;
+  /** Conexión con Google Calendar (solo ids; el token vive en memoria). */
+  google?: {
+    fixedCalendarIds: string[];
+    flexibleCalendarIds: string[];
+    /** Calendario "Meal Prep" creado por la app. */
+    targetCalendarId?: string;
+    lastPullAt?: string;
+    lastPushAt?: string;
+  };
 }
 
 // ── Plan de la semana ───────────────────────────────────────────────────────

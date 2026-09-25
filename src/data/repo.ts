@@ -1,6 +1,7 @@
 import { type Catalog, makeCatalog } from "@app/domain/catalog";
 import type { TimerState } from "@app/domain/cook";
-import type { ISODate } from "@app/domain/dates";
+import { type ISODate, todayIn } from "@app/domain/dates";
+import { carryOver } from "@app/domain/replan";
 import { applyAction, type PortionAction } from "@app/domain/safety";
 import { expandFixedCourses } from "@app/domain/schedule";
 import type {
@@ -70,12 +71,29 @@ export async function loadData(db: MealPrepDB): Promise<LoadedData> {
   };
 }
 
-/** Eventos de la semana. Por ahora solo los cursos locales; luego se suma Google Calendar. */
+/**
+ * Eventos de la semana: los de Google Calendar si ya se sincronizó esa semana;
+ * si no, los cursos guardados localmente (funciona sin conexión).
+ */
 export async function weekEvents(
   db: MealPrepDB,
   weekStart: ISODate,
 ): Promise<ScheduleEvent[]> {
+  const cached = await db.calendarCache.get(weekStart);
+  if (cached) return cached.events;
   return expandFixedCourses(await db.fixedCourses.toArray(), weekStart);
+}
+
+export async function saveCalendarCache(
+  db: MealPrepDB,
+  weekStart: ISODate,
+  events: ScheduleEvent[],
+): Promise<void> {
+  await db.calendarCache.put({
+    weekStart,
+    events,
+    fetchedAt: new Date().toISOString(),
+  });
 }
 
 /** Solo lectura (apta para consultas reactivas): el plan guardado o undefined. */
@@ -102,12 +120,13 @@ export async function getOrCreateWeek(
 }
 
 /**
- * Genera el plan desde cero y reemplaza el guardado.
- * Ojo: descarta el estado de las porciones de esa semana (usar antes de cocinar).
+ * Genera el plan desde cero con el horario actual y lo guarda, conservando el estado
+ * de lo que ya se cocinó (ver `carryOver`).
  */
 export async function regenerateWeek(
   db: MealPrepDB,
   weekStart: ISODate,
+  today?: ISODate,
 ): Promise<WeekPlan> {
   const { catalog, templates, settings } = await loadData(db);
   const templateId = templateIdForWeek(weekStart, settings.rotation);
@@ -121,13 +140,27 @@ export async function regenerateWeek(
     settings,
     events: await weekEvents(db, weekStart),
   });
-  const { portions, ...week } = plan;
-  await db.transaction("rw", [db.weeks, db.portions], async () => {
+  return db.transaction("rw", [db.weeks, db.portions], async () => {
+    const prev = await db.portions
+      .where("weekStart")
+      .equals(weekStart)
+      .toArray();
+    const merged = carryOver(
+      plan.portions,
+      prev,
+      today ?? todayIn(settings.timeZone),
+    );
+    const result: WeekPlan = {
+      ...plan,
+      portions: merged.portions,
+      warnings: [...plan.warnings, ...merged.notes],
+    };
+    const { portions, ...week } = result;
     await db.portions.where("weekStart").equals(weekStart).delete();
     await db.weeks.put({ ...week, generatedAt: new Date().toISOString() });
     await db.portions.bulkPut(portions);
+    return result;
   });
-  return plan;
 }
 
 export async function actOnPortion(

@@ -11,11 +11,13 @@ import {
   CaretLeft,
   CaretRight,
   CookingPot,
+  GearSix,
   type Icon,
   Snowflake,
   WarningCircle,
 } from "@phosphor-icons/react";
 import { MotionConfig, motion } from "motion/react";
+import Link from "next/link";
 import { useState } from "react";
 import { DayCard } from "./DayCard";
 
@@ -97,11 +99,8 @@ export function WeekView() {
   const summary = summarizeWeek(plan);
   const templateName = templates.get(plan.templateId)?.name ?? plan.templateId;
 
+  // Recalcular conserva lo ya cocinado (carryOver): no hace falta confirmar.
   const onRegenerate = async () => {
-    const ok = window.confirm(
-      "Se recalcula la semana con el horario actual y se reinicia el estado de las porciones (congelado, empacado…). ¿Continuar?",
-    );
-    if (!ok) return;
     setRegenerating(true);
     try {
       await regenerate();
@@ -130,6 +129,9 @@ export function WeekView() {
             </p>
           </div>
           <div className="flex items-center gap-1.5">
+            <Link href="/ajustes" aria-label="Ajustes" className={navBtn}>
+              <GearSix size={16} weight="bold" aria-hidden />
+            </Link>
             <motion.button
               whileTap={{ scale: 0.9 }}
               type="button"

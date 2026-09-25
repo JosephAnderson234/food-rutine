@@ -4,6 +4,7 @@ import type {
   FixedCourse,
   Ingredient,
   Portion,
+  ScheduleEvent,
   Settings,
   WeekPlan,
   WeekTemplate,
@@ -27,6 +28,13 @@ export interface ShoppingCheck {
   checked: boolean;
 }
 
+/** Eventos de Google ya convertidos, por semana: permite planificar sin internet. */
+export interface CalendarCache {
+  weekStart: string;
+  fetchedAt: string;
+  events: ScheduleEvent[];
+}
+
 /** Casilla marcada del día: tareas de la agenda e ítems de la mochila. */
 export interface DayCheck {
   /** `${date}:task:${taskId}` o `${date}:pack:${itemId}` */
@@ -47,6 +55,7 @@ export class MealPrepDB extends Dexie {
   inventory!: EntityTable<InventoryItem, "ingredientId">;
   shoppingChecks!: EntityTable<ShoppingCheck, "id">;
   checks!: EntityTable<DayCheck, "id">;
+  calendarCache!: EntityTable<CalendarCache, "weekStart">;
 
   constructor(name = "meal-prep") {
     super(name);
@@ -93,6 +102,8 @@ export class MealPrepDB extends Dexie {
         await tx.table("ingredients").bulkPut(INGREDIENTS);
         await tx.table("components").bulkPut(COMPONENTS);
       });
+    // v6: caché de eventos de Google Calendar por semana.
+    this.version(6).stores({ calendarCache: "weekStart" });
   }
 }
 

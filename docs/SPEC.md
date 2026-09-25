@@ -98,7 +98,7 @@ Sincronización en la nube multi-dispositivo · notificaciones push (por ahora s
 - **Porción estándar**: ~150 g proteína cocida + ~1 taza arroz cocido (~180 g) + ~1 taza verduras; "grande" y día de gym ≈ +30 %.
 
 - **Calendario fijo**: los cursos hoy están mezclados en el calendario principal. Se mueven a un calendario dedicado **"Utec Courses"**, que la app marca como fijo; el resto de calendarios se tratan como flexibles.
-  - Vive en la cuenta Google de UTEC (Workspace) → el OAuth debe funcionar con esa cuenta; riesgo: el admin puede bloquear apps de terceros no verificadas.
+  - Vive en la cuenta Google de UTEC (Workspace). ✅ Verificado 2026-09-25: el OAuth (modo Prueba) funciona con esa cuenta.
   - Los eventos traen `location`: aula (presencial) o link de Zoom (virtual). **Día solo con clases virtuales = se come en casa, no hay mochila.**
 
 ## 10. Estado
@@ -110,7 +110,9 @@ Sincronización en la nube multi-dispositivo · notificaciones push (por ahora s
 - ✅ Paso 5: Compras + Inventario (`/compras`): 1 o 2 compras (una por meal prep), aviso de congelar carne cruda si no llega fresca a su prep (USDA: cruda 1–2 días en refri), lista marcable por compra, básicos a revisar, inventario de casa que descuenta.
 - ✅ Paso 6: Modo cocina (`/cocina`): selector de sesión, checklist previo, panel en vivo (qué hacer ahora, qué corre solo, atraso), pasos con barra de tiempo activa/pasiva, tandas y temperatura segura, armado de táperes con texto de etiqueta y destino (refri/congelador).
 - ✅ Paso 6b: Modo guía (pantalla completa, un paso a la vez): cantidades por tanda en medidas de cocina, nivel de fuego, subpasos, "listo cuando", consejos, temporizadores persistentes con vibración/sonido, pantalla siempre encendida (Wake Lock).
-- ⏭️ Siguiente: Google Calendar (lectura de "Utec Courses" + escritura de gym/prep/recordatorios), luego IA con Groq y PWA.
+- ✅ Recalcular conserva lo ya cocinado (`carryOver`): estado, táper y plato de porciones cuyo prep ya ocurrió.
+- ✅ Paso 7: Google Calendar (solo navegador, GIS token model): Ajustes → conectar, roles fijo/flexible por calendario, traer horario (caché por semana para offline + recálculo), enviar a calendario propio «Meal Prep» (diff idempotente por `extendedProperties`). Guía: `docs/GOOGLE_SETUP.md`.
+- ⏭️ Siguiente: IA con Groq, luego PWA.
 
 ## 11. Identidad visual
 

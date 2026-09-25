@@ -10,12 +10,14 @@ import {
   inventoryMap,
   regenerateWeek,
   resetCook,
+  saveCalendarCache,
   seedIfEmpty,
   setBought,
   setCheck,
   setInventory,
   timerKey,
   updateSettings,
+  weekEvents,
 } from "./repo";
 
 let db: MealPrepDB;
@@ -62,6 +64,18 @@ describe("repo", () => {
     const fridge = plan.portions.find((p) => p.state === "fridge");
     if (!fridge) throw new Error("se esperaba una porción en refri");
     await expect(actOnPortion(db, fridge.id, "thaw")).rejects.toThrow();
+  });
+
+  it("recalcular conserva lo que ya se hizo con la comida cocinada", async () => {
+    const plan = await getOrCreateWeek(db, "2026-09-27");
+    const lunes = plan.portions.find(
+      (p) => p.eatOn === "2026-09-28" && p.slot === "almuerzo",
+    );
+    if (!lunes) throw new Error("falta lunes");
+    await actOnPortion(db, lunes.id, "pack");
+    const again = await regenerateWeek(db, "2026-09-27", "2026-09-28");
+    expect(again.portions.find((p) => p.id === lunes.id)?.state).toBe("packed");
+    expect((await db.portions.get(lunes.id))?.state).toBe("packed");
   });
 
   it("regenerar reemplaza las porciones de esa semana", async () => {
@@ -136,5 +150,24 @@ describe("repo", () => {
       { stepId: "pollo:saltear#2", minutes: 8, startedAt: expect.any(Number) },
     ]);
     expect(st.done.size).toBe(0);
+  });
+
+  it("usa los eventos de Google si la semana está sincronizada; si no, los cursos locales", async () => {
+    expect(await weekEvents(db, "2026-09-27")).toHaveLength(14);
+    await saveCalendarCache(db, "2026-09-27", [
+      {
+        id: "g:utec:1",
+        title: "Machine Learning",
+        date: "2026-09-28",
+        start: "07:00",
+        end: "09:00",
+        kind: "fixed",
+        modality: "virtual",
+        source: "google",
+      },
+    ]);
+    const events = await weekEvents(db, "2026-09-27");
+    expect(events.map((e) => e.id)).toEqual(["g:utec:1"]);
+    expect(await weekEvents(db, "2026-10-04")).toHaveLength(14);
   });
 });
