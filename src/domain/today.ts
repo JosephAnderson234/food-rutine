@@ -99,7 +99,10 @@ export function buildToday(input: TodayInput): TodayView {
   return {
     day,
     meals: day.meals.map((m) => ({ ...m, actions: portionActions(m) })),
-    packing: packingFor(plan, today, catalog),
+    packing: packingFor(plan, today, catalog, {
+      coldPacks: settings.coldPacks ?? 0,
+      lunchFrom: settings.lunchWindow.from,
+    }),
     next: nextTask?.time
       ? { task: nextTask, inMin: toMinutes(nextTask.time) - nowMin }
       : null,

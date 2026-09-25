@@ -35,6 +35,14 @@ export interface CalendarCache {
   events: ScheduleEvent[];
 }
 
+/** Tarea ya enviada a Todoist (para no duplicar ni revivir lo tachado). */
+export interface TodoSentRow {
+  key: string;
+  weekStart: string;
+  taskId: string;
+  fingerprint: string;
+}
+
 /** Casilla marcada del día: tareas de la agenda e ítems de la mochila. */
 export interface DayCheck {
   /** `${date}:task:${taskId}` o `${date}:pack:${itemId}` */
@@ -56,6 +64,7 @@ export class MealPrepDB extends Dexie {
   shoppingChecks!: EntityTable<ShoppingCheck, "id">;
   checks!: EntityTable<DayCheck, "id">;
   calendarCache!: EntityTable<CalendarCache, "weekStart">;
+  todoSent!: EntityTable<TodoSentRow, "key">;
 
   constructor(name = "meal-prep") {
     super(name);
@@ -104,6 +113,8 @@ export class MealPrepDB extends Dexie {
       });
     // v6: caché de eventos de Google Calendar por semana.
     this.version(6).stores({ calendarCache: "weekStart" });
+    // v7: tareas enviadas a Todoist.
+    this.version(7).stores({ todoSent: "key, weekStart" });
   }
 }
 

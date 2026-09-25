@@ -1,6 +1,7 @@
 import type { HHmm, ISODate } from "./dates";
 import { modalityFromLocation } from "./schedule";
-import type { ScheduleEvent, TaskKind, WeekPlan } from "./types";
+import { SHORT_TASK_KINDS } from "./todo";
+import type { ScheduleEvent, WeekPlan } from "./types";
 
 /** Subconjunto de un evento de Google Calendar API v3 que usa la app. */
 export interface GEvent {
@@ -83,23 +84,11 @@ export interface OutEvent {
   remindMin: number;
 }
 
-const TASK_EVENT: Partial<
-  Record<TaskKind, { minutes: number; remind: number }>
-> = {
-  thaw: { minutes: 10, remind: 0 },
-  gelpacks: { minutes: 10, remind: 0 },
-  freeze: { minutes: 10, remind: 0 },
-  pack: { minutes: 15, remind: 0 },
-};
-
-function plusMinutes(time: HHmm, minutes: number): HHmm {
-  const [h, m] = time.split(":").map(Number);
-  const t = Math.min(h * 60 + m + minutes, 23 * 60 + 59);
-  return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
-}
-
 /** Lo que el plan de la semana quiere tener en el calendario "Meal Prep". */
-export function desiredEvents(plan: WeekPlan): OutEvent[] {
+export function desiredEvents(
+  plan: WeekPlan,
+  opts: { shortTasks: "reminder" | "none" } = { shortTasks: "reminder" },
+): OutEvent[] {
   const out: OutEvent[] = [];
   for (const s of plan.sessions) {
     if (s.kind === "gym") {
@@ -130,17 +119,20 @@ export function desiredEvents(plan: WeekPlan): OutEvent[] {
       });
     }
   }
-  for (const t of plan.tasks) {
-    const cfg = TASK_EVENT[t.kind];
-    if (!cfg || !t.time) continue;
-    out.push({
-      key: `${plan.weekStart}|${t.kind}|${t.portionId ?? t.date}`,
-      summary: t.label,
-      date: t.date,
-      start: t.time,
-      end: plusMinutes(t.time, cfg.minutes),
-      remindMin: cfg.remind,
-    });
+  // Tareas cortas: si van a una app de tareas no se duplican; si no, recordatorio
+  // de 0 minutos (una marca con aviso, sin ocupar un bloque del calendario).
+  if (opts.shortTasks === "reminder") {
+    for (const t of plan.tasks) {
+      if (!SHORT_TASK_KINDS.includes(t.kind) || !t.time) continue;
+      out.push({
+        key: `${plan.weekStart}|${t.kind}|${t.portionId ?? t.date}`,
+        summary: t.label,
+        date: t.date,
+        start: t.time,
+        end: t.time,
+        remindMin: 0,
+      });
+    }
   }
   return out;
 }

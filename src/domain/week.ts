@@ -302,19 +302,22 @@ export function buildWeek(input: BuildWeekInput): WeekPlan {
       const what = portion
         ? `${containerName(portion)} (${portion.label})`
         : (assembly?.name ?? "almuerzo");
+      const coldPacks = settings.coldPacks ?? 0;
       addTask(
         meal.date,
         "pack",
-        `Armar lonchera: ${what} + 2 gel packs`,
+        `Armar lonchera: ${what}${coldPacks > 0 ? ` + ${coldPacks} gel packs` : ""}`,
         at,
         meal.portionId,
       );
-      addTask(
-        addDays(meal.date, -1),
-        "gelpacks",
-        `Gel packs al congelador: mañana almuerzas en la U (${portion ? containerName(portion) : "táper"})`,
-        GEL_PACKS_AT,
-      );
+      if (coldPacks > 0) {
+        addTask(
+          addDays(meal.date, -1),
+          "gelpacks",
+          `Gel packs al congelador: mañana almuerzas en la U (${portion ? containerName(portion) : "táper"})`,
+          GEL_PACKS_AT,
+        );
+      }
     } else if (
       meal.slot !== "desayuno" &&
       assembly?.finish &&

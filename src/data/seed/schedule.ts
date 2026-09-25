@@ -151,4 +151,5 @@ export const DEFAULT_SETTINGS: Settings = {
   containers: { large: 6, small: 4 },
   rotation: ["A"],
   shoppingTrips: 2,
+  coldPacks: 0,
 };

@@ -134,7 +134,7 @@ describe("portionActions", () => {
 
 describe("tareas ↔ porciones", () => {
   const thaw = base.tasks.find((t) => t.kind === "thaw");
-  const gel = base.tasks.find((t) => t.kind === "gelpacks");
+  const gel = base.tasks.find((t) => t.kind === "finish");
   if (!thaw || !gel) throw new Error("faltan tareas en el plan");
   const portion = base.portions.find((p) => p.id === thaw.portionId);
 

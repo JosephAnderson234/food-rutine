@@ -91,8 +91,18 @@ describe("salida hacia 'Meal Prep'", () => {
     expect(kinds.filter((k) => k === "gym")).toHaveLength(3);
     expect(kinds.filter((k) => k === "prep")).toHaveLength(2);
     expect(kinds).toContain("thaw");
-    expect(kinds).toContain("gelpacks");
+    expect(kinds).toContain("pack");
     expect(kinds).not.toContain("finish");
+  });
+
+  it("recordatorios cortos sin duración; con Todoist no van al calendario", () => {
+    const thaw = desired.find((d) => d.key.split("|")[1] === "thaw");
+    expect(thaw?.start).toBe(thaw?.end);
+    expect(thaw?.remindMin).toBe(0);
+    const onlyBlocks = desiredEvents(plan, { shortTasks: "none" });
+    expect(new Set(onlyBlocks.map((d) => d.key.split("|")[1]))).toEqual(
+      new Set(["gym", "prep"]),
+    );
   });
 
   it("el meal prep describe los táperes", () => {

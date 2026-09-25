@@ -112,6 +112,8 @@ Sincronización en la nube multi-dispositivo · notificaciones push (por ahora s
 - ✅ Paso 6b: Modo guía (pantalla completa, un paso a la vez): cantidades por tanda en medidas de cocina, nivel de fuego, subpasos, "listo cuando", consejos, temporizadores persistentes con vibración/sonido, pantalla siempre encendida (Wake Lock).
 - ✅ Recalcular conserva lo ya cocinado (`carryOver`): estado, táper y plato de porciones cuyo prep ya ocurrió.
 - ✅ Paso 7: Google Calendar (solo navegador, GIS token model): Ajustes → conectar, roles fijo/flexible por calendario, traer horario (caché por semana para offline + recálculo), enviar a calendario propio «Meal Prep» (diff idempotente por `extendedProperties`). Guía: `docs/GOOGLE_SETUP.md`.
+- ✅ Gel packs opcionales (ajuste `coldPacks`, 0 por defecto): sin ellos no hay tareas de congelarlos y la mochila avisa las horas fuera de la refri (regla de 2 h).
+- ✅ Tareas cortas (descongelar, congelar, lonchera) → **Todoist** (API v1 desde el navegador, token en IndexedDB, proyecto «Meal Prep», con hora y aviso; lo tachado no se recrea). Google Tasks descartado: su API no guarda la hora. Sin Todoist, van a Calendar como recordatorio de 0 min.
 - ⏭️ Siguiente: IA con Groq, luego PWA.
 
 ## 11. Identidad visual

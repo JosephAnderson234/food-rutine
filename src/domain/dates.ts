@@ -91,3 +91,40 @@ export function minutesIn(timeZone = "America/Lima", now = new Date()): number {
     Number(parts.find((p) => p.type === type)?.value);
   return get("hour") * 60 + get("minute");
 }
+
+/**
+ * Instante UTC (ISO) de una fecha y hora civiles en una zona IANA.
+ * Ej.: 2026-09-29 21:00 en Lima → "2026-09-30T02:00:00.000Z".
+ */
+export function zonedToUtcIso(
+  date: ISODate,
+  time: HHmm,
+  timeZone: string,
+): string {
+  const [y, m, d] = date.split("-").map(Number);
+  const [hh, mm] = time.split(":").map(Number);
+  const wanted = Date.UTC(y, m - 1, d, hh, mm);
+  // Se corrige el desfase de la zona en ese instante (dos pasadas cubren cambios de horario).
+  let guess = wanted;
+  for (let i = 0; i < 2; i++) {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    }).formatToParts(new Date(guess));
+    const get = (t: string) => Number(parts.find((p) => p.type === t)?.value);
+    const seen = Date.UTC(
+      get("year"),
+      get("month") - 1,
+      get("day"),
+      get("hour"),
+      get("minute"),
+    );
+    guess += wanted - seen;
+  }
+  return new Date(guess).toISOString();
+}

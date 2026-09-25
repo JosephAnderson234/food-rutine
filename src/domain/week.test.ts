@@ -85,15 +85,25 @@ describe("buildWeek — Semana A con el horario real", () => {
     expect(wedDinner?.containerNo).toBeUndefined();
   });
 
-  it("recuerda congelar gel packs la noche antes de cada día en la U", () => {
-    expect(
-      plan.tasks.filter((t) => t.kind === "gelpacks").map((t) => t.date),
-    ).toEqual(["2026-09-27", "2026-09-28", "2026-09-29", "2026-10-01"]);
+  it("sin gel packs (ajuste por defecto) no hay tarea de congelarlos", () => {
+    expect(plan.tasks.filter((t) => t.kind === "gelpacks")).toEqual([]);
+    expect(byDate("2026-09-28", "pack")[0].label).not.toContain("gel");
   });
 
-  it("la tarea de gel packs explica por qué", () => {
-    expect(byDate("2026-10-01", "gelpacks")[0].label).toBe(
+  it("con gel packs, recuerda congelarlos la víspera de cada día en la U y dice por qué", () => {
+    const withPacks = seedWeek([], { ...DEFAULT_SETTINGS, coldPacks: 2 });
+    const gel = withPacks.tasks.filter((t) => t.kind === "gelpacks");
+    expect(gel.map((t) => t.date)).toEqual([
+      "2026-09-27",
+      "2026-09-28",
+      "2026-09-29",
+      "2026-10-01",
+    ]);
+    expect(gel.at(-1)?.label).toBe(
       "Gel packs al congelador: mañana almuerzas en la U (taper #3)",
+    );
+    expect(withPacks.tasks.find((t) => t.kind === "pack")?.label).toContain(
+      "+ 2 gel packs",
     );
   });
 
@@ -135,19 +145,31 @@ describe("buildWeek — semana rota", () => {
 describe("packingFor", () => {
   const plan = seedWeek();
 
-  it("lunes: táper #1, sillao, lonchera y 2 gel packs", () => {
-    const list = packingFor(plan, "2026-09-28", catalog);
+  it("lunes sin gel packs: táper #1, sillao, lonchera y aviso de horas fuera de la refri", () => {
+    const list = packingFor(plan, "2026-09-28", catalog, {
+      coldPacks: 0,
+      lunchFrom: "12:00",
+    });
     const ids = list?.items.map((i) => i.id);
     expect(list?.items[0].label).toContain("taper #1");
     expect(ids).toEqual(
-      expect.arrayContaining([
-        "sillao",
-        "lonchera",
-        "gel1",
-        "gel2",
-        "cubiertos",
-      ]),
+      expect.arrayContaining(["sillao", "lonchera", "cubiertos"]),
     );
+    expect(ids).not.toContain("gel1");
+    // sale 08:15, almuerza 12:00 → ~4 h
+    expect(list?.reminders[0]).toContain("~4 h fuera de la refri");
+    expect(list?.reminders[0]).toContain("botella de agua");
+  });
+
+  it("con gel packs los lista y no avisa de horas", () => {
+    const list = packingFor(plan, "2026-09-28", catalog, {
+      coldPacks: 2,
+      lunchFrom: "12:00",
+    });
+    expect(list?.items.map((i) => i.id)).toEqual(
+      expect.arrayContaining(["gel1", "gel2"]),
+    );
+    expect(list?.reminders.join(" ")).not.toContain("fuera de la refri");
   });
 
   it("viernes: la pasta lleva su salsa aparte", () => {

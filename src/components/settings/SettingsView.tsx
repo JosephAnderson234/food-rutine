@@ -1,8 +1,9 @@
 "use client";
 
 import type { CalendarRole, DiscoveredCalendar } from "@app/data/google-sync";
-import { useToday, useWeek } from "@app/data/hooks";
+import { useToday, useUpdateSettings, useWeek } from "@app/data/hooks";
 import { useGoogleCalendar } from "@app/data/use-google";
+import { useTodoist } from "@app/data/use-todoist";
 import { addDays, startOfWeek } from "@app/domain/dates";
 import {
   ArrowsClockwise,
@@ -12,8 +13,12 @@ import {
   CloudArrowDown,
   CloudArrowUp,
   GoogleLogo,
+  ListChecks,
   LockSimple,
+  Minus,
+  Plus,
   SignOut,
+  Snowflake,
   WarningCircle,
 } from "@phosphor-icons/react";
 import { motion } from "motion/react";
@@ -112,8 +117,17 @@ function RolePicker({
 export function SettingsView() {
   const today = useToday();
   const weekStart = today ? startOfWeek(today) : null;
-  const { data } = useWeek(weekStart);
+  const { data, regenerate } = useWeek(weekStart);
   const g = useGoogleCalendar();
+  const t = useTodoist();
+  const [tokenDraft, setTokenDraft] = useState("");
+  const todoistToken = data?.settings.todoist?.token;
+  const updateSettings = useUpdateSettings();
+  const coldPacks = data?.settings.coldPacks ?? 0;
+  const setColdPacks = async (n: number) => {
+    await updateSettings({ coldPacks: Math.max(0, Math.min(4, n)) });
+    await regenerate();
+  };
   const google = data?.settings.google;
   const initialRoles: Record<string, CalendarRole> = Object.fromEntries([
     ...(google?.fixedCalendarIds ?? []).map((id) => [id, "fixed"] as const),
@@ -138,6 +152,50 @@ export function SettingsView() {
         </Link>
         <h1 className="text-5xl leading-[0.9] font-bold">Ajustes</h1>
       </header>
+
+      <section className="space-y-3 rounded-3xl border border-line bg-panel p-4">
+        <div className="flex items-start gap-3">
+          <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-frost-soft text-frost">
+            <Snowflake size={22} weight="duotone" aria-hidden />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-xl font-semibold">Acumuladores de frío</h2>
+            <p className="text-sm text-muted">
+              Gel packs para la lonchera. Con 0 no hay tareas de congelarlos y
+              la mochila te avisa cuántas horas pasa el táper fuera de la refri.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-between rounded-2xl bg-panel-2 p-2">
+          <button
+            type="button"
+            aria-label="Quitar uno"
+            disabled={!data || coldPacks === 0}
+            onClick={() => void setColdPacks(coldPacks - 1)}
+            className="grid size-10 place-items-center rounded-full bg-panel disabled:opacity-40"
+          >
+            <Minus size={16} weight="bold" aria-hidden />
+          </button>
+          <output
+            aria-live="polite"
+            className="font-heading text-2xl font-semibold"
+          >
+            {coldPacks}
+            <span className="ml-1.5 text-sm font-normal text-muted">
+              {coldPacks === 1 ? "gel pack" : "gel packs"}
+            </span>
+          </output>
+          <button
+            type="button"
+            aria-label="Agregar uno"
+            disabled={!data || coldPacks >= 4}
+            onClick={() => void setColdPacks(coldPacks + 1)}
+            className="grid size-10 place-items-center rounded-full bg-panel disabled:opacity-40"
+          >
+            <Plus size={16} weight="bold" aria-hidden />
+          </button>
+        </div>
+      </section>
 
       <section className="space-y-4 rounded-3xl border border-line bg-panel p-4">
         <div className="flex items-start gap-3">
@@ -297,6 +355,109 @@ export function SettingsView() {
           crea. El permiso vive en esta pestaña (~1 h) y no sale de tu
           navegador.
         </p>
+      </section>
+
+      <section className="space-y-4 rounded-3xl border border-line bg-panel p-4">
+        <div className="flex items-start gap-3">
+          <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-danger-soft text-danger">
+            <ListChecks size={22} weight="duotone" aria-hidden />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-xl font-semibold">Todoist</h2>
+            <p className="text-sm text-muted">
+              Tareas cortas con hora y aviso (descongelar, congelar, lonchera)
+              en un proyecto «Meal Prep». Se tachan allá o en la app; lo tachado
+              no se vuelve a crear.
+            </p>
+          </div>
+          {todoistToken && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-good-soft px-2 py-0.5 text-[11px] font-medium text-good">
+              <CheckCircle size={12} weight="fill" aria-hidden />
+              Conectado
+            </span>
+          )}
+        </div>
+
+        {todoistToken ? (
+          <div className="space-y-3">
+            {weekStart && (
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                type="button"
+                disabled={t.busy !== null}
+                onClick={() => t.push(weekStart)}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-accent py-3 text-sm font-semibold text-panel disabled:opacity-50"
+              >
+                <CloudArrowUp size={18} weight="duotone" aria-hidden />
+                {t.busy === "push" ? "Enviando…" : "Enviar tareas de la semana"}
+              </motion.button>
+            )}
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
+              <span>
+                Último envío:{" "}
+                <span className="font-mono text-text">
+                  {when(data?.settings.todoist?.lastPushAt)}
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={t.forget}
+                className="inline-flex items-center gap-1 hover:text-danger"
+              >
+                <SignOut size={14} weight="duotone" aria-hidden />
+                Quitar token
+              </button>
+            </div>
+            <p className="text-[11px] text-muted">
+              Vuelve a «Enviar semana a Calendar» una vez: se borran de Google
+              los recordatorios cortos que ahora viven en Todoist.
+            </p>
+          </div>
+        ) : (
+          <form
+            className="space-y-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (tokenDraft.trim()) t.saveToken(tokenDraft);
+            }}
+          >
+            <label htmlFor="todoist-token" className="text-sm font-medium">
+              Token de API
+            </label>
+            <input
+              id="todoist-token"
+              type="password"
+              autoComplete="off"
+              spellCheck={false}
+              value={tokenDraft}
+              onChange={(e) => setTokenDraft(e.target.value)}
+              placeholder="Pega tu token"
+              className="w-full rounded-2xl border border-line bg-panel-2 px-3 py-2.5 font-mono text-sm focus:border-accent focus:outline-none"
+            />
+            <p className="text-[11px] text-muted">
+              Todoist → Ajustes → Integraciones → Desarrollador → «Copiar token
+              de API». Se guarda solo en este navegador.
+            </p>
+            <button
+              type="submit"
+              disabled={t.busy !== null || !tokenDraft.trim()}
+              className="w-full rounded-full bg-text py-3 text-sm font-semibold text-bg disabled:opacity-50"
+            >
+              {t.busy === "save" ? "Verificando…" : "Guardar y verificar"}
+            </button>
+          </form>
+        )}
+
+        {t.message && (
+          <output className="block rounded-2xl bg-good-soft p-3 text-sm">
+            {t.message}
+          </output>
+        )}
+        {t.error && (
+          <p role="alert" className="rounded-2xl bg-danger-soft p-3 text-sm">
+            {t.error}
+          </p>
+        )}
       </section>
     </div>
   );

@@ -9,6 +9,7 @@ import {
   todayIn,
   toMinutes,
   weekdayOf,
+  zonedToUtcIso,
 } from "./dates";
 
 describe("dates", () => {
@@ -52,6 +53,15 @@ describe("dates", () => {
   it("minutos del día en Lima", () => {
     expect(minutesIn("America/Lima", new Date("2026-10-01T02:30:00Z"))).toBe(
       21 * 60 + 30,
+    );
+  });
+
+  it("hora de Lima a UTC", () => {
+    expect(zonedToUtcIso("2026-09-29", "21:00", "America/Lima")).toBe(
+      "2026-09-30T02:00:00.000Z",
+    );
+    expect(zonedToUtcIso("2026-09-29", "08:15", "America/Lima")).toBe(
+      "2026-09-29T13:15:00.000Z",
     );
   });
 });

@@ -159,7 +159,9 @@ export async function pushWeek(
     const x = toExisting(e, timeZone);
     return x ? [x] : [];
   });
-  const diff = diffOutbound(desiredEvents(plan), existing);
+  // Con Todoist conectado, las tareas cortas van allá y no se duplican en el calendario.
+  const shortTasks = settings?.todoist?.token ? "none" : "reminder";
+  const diff = diffOutbound(desiredEvents(plan, { shortTasks }), existing);
 
   for (const e of diff.create)
     await api.insertEvent(target, toGoogleBody(e, weekStart, timeZone));

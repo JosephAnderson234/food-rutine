@@ -188,6 +188,14 @@ export interface Settings {
   rotation: string[];
   /** 1 = todo el domingo; 2 = una compra antes de cada meal prep (por defecto). */
   shoppingTrips?: 1 | 2;
+  /** Acumuladores de frío (gel packs) disponibles; 0 = no tiene. */
+  coldPacks?: number;
+  /** Tareas cortas en Todoist (el token vive solo en este navegador). */
+  todoist?: {
+    token: string;
+    projectId?: string;
+    lastPushAt?: string;
+  };
   /** Conexión con Google Calendar (solo ids; el token vive en memoria). */
   google?: {
     fixedCalendarIds: string[];
