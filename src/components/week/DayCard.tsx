@@ -9,7 +9,7 @@ import {
 } from "@app/components/ui/icons";
 import type { DayView, MealView } from "@app/domain/week-view";
 import { formatKcal } from "@app/lib/format";
-import { CaretDown } from "@phosphor-icons/react";
+import { CalendarBlank, CaretDown } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
@@ -112,6 +112,33 @@ export function DayCard({ day }: { day: DayView }) {
             transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
           >
             <div className="space-y-4 border-t border-line px-4 pt-4 pb-4">
+              {day.commitments.length > 0 && (
+                <ul className="space-y-1.5">
+                  {day.commitments.map((c) => (
+                    <li
+                      key={c.id}
+                      className="flex items-center gap-3 rounded-2xl border border-dashed border-line px-3 py-2 text-sm"
+                    >
+                      <CalendarBlank
+                        size={16}
+                        weight="duotone"
+                        className="shrink-0 text-muted"
+                        aria-hidden
+                      />
+                      <span className="font-mono text-xs text-muted">
+                        {c.start}–{c.end}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate">{c.title}</span>
+                      {c.source === "app" && (
+                        <Chip className="bg-accent-soft text-accent">
+                          agregado
+                        </Chip>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
               {day.agenda.length > 0 && (
                 <ol className="space-y-2.5">
                   {day.agenda.map((task) => {

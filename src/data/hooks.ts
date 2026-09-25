@@ -15,6 +15,7 @@ import {
   inventoryMap,
   type LoadedData,
   loadData,
+  manualEventsFor,
   readWeek,
   regenerateWeek,
   resetCook,
@@ -30,6 +31,8 @@ import {
 export interface WeekData extends LoadedData {
   plan: WeekPlan;
   events: ScheduleEvent[];
+  /** Compromisos agregados en la app (se pueden quitar). */
+  manual: ScheduleEvent[];
 }
 
 /**
@@ -68,12 +71,13 @@ export function useWeek(weekStart: ISODate | null) {
   const data = useLiveQuery(async (): Promise<WeekData | undefined> => {
     if (!weekStart || ensured !== weekStart) return undefined;
     const db = getDB();
-    const [plan, loaded, events] = await Promise.all([
+    const [plan, loaded, events, manual] = await Promise.all([
       readWeek(db, weekStart),
       loadData(db),
       weekEvents(db, weekStart),
+      manualEventsFor(db, weekStart),
     ]);
-    return plan && { ...loaded, plan, events };
+    return plan && { ...loaded, plan, events, manual };
   }, [weekStart, ensured]);
 
   const regenerate = useCallback(async () => {

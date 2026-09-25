@@ -48,6 +48,8 @@ export interface DayView {
   mode: DayMode;
   campus: { from: HHmm; to: HHmm } | null;
   courses: ScheduleEvent[];
+  /** Compromisos flexibles (Google o agregados en la app) que bloquean horario. */
+  commitments: ScheduleEvent[];
   agenda: DayTask[];
   meals: MealView[];
   total: Nutrition;
@@ -72,6 +74,9 @@ export function buildDayViews(
   return Array.from({ length: 7 }, (_, i) => {
     const date = addDays(plan.weekStart, i);
     const courses = eventsOn(events, date).filter((e) => e.kind === "fixed");
+    const commitments = eventsOn(events, date).filter(
+      (e) => e.kind === "flexible",
+    );
     const campus = campusSpan(events, date);
     const meals = plan.meals
       .filter((m) => m.date === date)
@@ -112,6 +117,7 @@ export function buildDayViews(
       mode: campus ? "campus" : courses.length > 0 ? "virtual" : "libre",
       campus,
       courses,
+      commitments,
       agenda: plan.tasks.filter((t) => t.date === date),
       meals,
       total: meals.reduce(

@@ -43,6 +43,9 @@ export interface TodoSentRow {
   fingerprint: string;
 }
 
+/** Compromiso agregado desde la app (p. ej. por la IA): bloquea horario esa semana. */
+export type ManualEvent = ScheduleEvent & { weekStart: string };
+
 /** Casilla marcada del día: tareas de la agenda e ítems de la mochila. */
 export interface DayCheck {
   /** `${date}:task:${taskId}` o `${date}:pack:${itemId}` */
@@ -65,6 +68,7 @@ export class MealPrepDB extends Dexie {
   checks!: EntityTable<DayCheck, "id">;
   calendarCache!: EntityTable<CalendarCache, "weekStart">;
   todoSent!: EntityTable<TodoSentRow, "key">;
+  manualEvents!: EntityTable<ManualEvent, "id">;
 
   constructor(name = "meal-prep") {
     super(name);
@@ -115,6 +119,8 @@ export class MealPrepDB extends Dexie {
     this.version(6).stores({ calendarCache: "weekStart" });
     // v7: tareas enviadas a Todoist.
     this.version(7).stores({ todoSent: "key, weekStart" });
+    // v8: compromisos agregados en la app.
+    this.version(8).stores({ manualEvents: "id, weekStart" });
   }
 }
 

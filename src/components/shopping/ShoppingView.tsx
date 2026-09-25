@@ -1,5 +1,6 @@
 "use client";
 
+import { InventoryAssistant } from "@app/components/assistant/InventoryAssistant";
 import { CheckRow } from "@app/components/ui/CheckRow";
 import { Chip } from "@app/components/ui/day";
 import {
@@ -280,6 +281,8 @@ function InventoryEditor({
                     {ing.name}
                   </label>
                   <input
+                    // Se remonta si el valor cambia desde fuera (p. ej. el asistente).
+                    key={`${ing.id}:${value}`}
                     id={`inv-${ing.id}`}
                     type="number"
                     inputMode="decimal"
@@ -421,8 +424,10 @@ export function ShoppingView() {
           />
         ))}
 
+        <InventoryAssistant catalog={catalog} inventory={shopping.inventory} />
+
         <InventoryEditor
-          key={weekStart}
+          key={`inventory-${weekStart}`}
           ingredients={neededIngredients}
           inventory={shopping.inventory}
           onChange={shopping.setHave}

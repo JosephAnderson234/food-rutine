@@ -80,8 +80,41 @@ export async function weekEvents(
   weekStart: ISODate,
 ): Promise<ScheduleEvent[]> {
   const cached = await db.calendarCache.get(weekStart);
-  if (cached) return cached.events;
-  return expandFixedCourses(await db.fixedCourses.toArray(), weekStart);
+  const base = cached
+    ? cached.events
+    : expandFixedCourses(await db.fixedCourses.toArray(), weekStart);
+  const manual = await manualEventsFor(db, weekStart);
+  return [...base, ...manual];
+}
+
+export async function manualEventsFor(
+  db: MealPrepDB,
+  weekStart: ISODate,
+): Promise<ScheduleEvent[]> {
+  const rows = await db.manualEvents
+    .where("weekStart")
+    .equals(weekStart)
+    .toArray();
+  return rows.map(({ weekStart: _, ...e }) => e);
+}
+
+/** Agrega compromisos a la semana y la recalcula (conserva lo ya cocinado). */
+export async function addManualEvents(
+  db: MealPrepDB,
+  weekStart: ISODate,
+  events: ScheduleEvent[],
+): Promise<WeekPlan> {
+  await db.manualEvents.bulkPut(events.map((e) => ({ ...e, weekStart })));
+  return regenerateWeek(db, weekStart);
+}
+
+export async function removeManualEvent(
+  db: MealPrepDB,
+  weekStart: ISODate,
+  id: string,
+): Promise<WeekPlan> {
+  await db.manualEvents.delete(id);
+  return regenerateWeek(db, weekStart);
 }
 
 export async function saveCalendarCache(

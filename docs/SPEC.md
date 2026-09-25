@@ -114,7 +114,8 @@ Sincronización en la nube multi-dispositivo · notificaciones push (por ahora s
 - ✅ Paso 7: Google Calendar (solo navegador, GIS token model): Ajustes → conectar, roles fijo/flexible por calendario, traer horario (caché por semana para offline + recálculo), enviar a calendario propio «Meal Prep» (diff idempotente por `extendedProperties`). Guía: `docs/GOOGLE_SETUP.md`.
 - ✅ Gel packs opcionales (ajuste `coldPacks`, 0 por defecto): sin ellos no hay tareas de congelarlos y la mochila avisa las horas fuera de la refri (regla de 2 h).
 - ✅ Tareas cortas (descongelar, congelar, lonchera) → **Todoist** (API v1 desde el navegador, token en IndexedDB, proyecto «Meal Prep», con hora y aviso; lo tachado no se recrea). Google Tasks descartado: su API no guarda la hora. Sin Todoist, van a Calendar como recordatorio de 0 min.
-- ⏭️ Siguiente: IA con Groq, luego PWA.
+- ✅ Paso 8a: Asistente con Groq (`/api/ai`, `openai/gpt-oss-120b`, salida estructurada estricta): «¿Cambió algo esta semana?» (texto → bloques ocupados → el motor reubica gym/prep) e inventario por texto (→ cambios con vista previa). La IA solo traduce; siempre hay confirmación. Key solo en servidor (`GROQ_API_KEY`), la ruta rechaza otros orígenes.
+- ⏭️ Siguiente: 8b (variantes de platos, plantillas nuevas) y PWA.
 
 ## 11. Identidad visual
 

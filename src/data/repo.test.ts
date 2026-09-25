@@ -3,12 +3,14 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { MealPrepDB } from "./db";
 import {
   actOnPortion,
+  addManualEvents,
   boughtFor,
   checksFor,
   cookState,
   getOrCreateWeek,
   inventoryMap,
   regenerateWeek,
+  removeManualEvent,
   resetCook,
   saveCalendarCache,
   seedIfEmpty,
@@ -169,5 +171,29 @@ describe("repo", () => {
     const events = await weekEvents(db, "2026-09-27");
     expect(events.map((e) => e.id)).toEqual(["g:utec:1"]);
     expect(await weekEvents(db, "2026-10-04")).toHaveLength(14);
+  });
+
+  it("un compromiso agregado mueve el gym y al quitarlo vuelve", async () => {
+    await getOrCreateWeek(db, "2026-09-27");
+    const plan = await addManualEvents(db, "2026-09-27", [
+      {
+        id: "ai:1",
+        title: "Parcial",
+        date: "2026-10-01",
+        start: "14:00",
+        end: "18:00",
+        kind: "flexible",
+        source: "app",
+      },
+    ]);
+    const gym = (p: typeof plan) =>
+      p.sessions.find((s) => s.kind === "gym" && s.date === "2026-10-01")
+        ?.start;
+    expect(gym(plan)).toBe("18:00");
+    expect(
+      (await weekEvents(db, "2026-09-27")).some((e) => e.id === "ai:1"),
+    ).toBe(true);
+    const back = await removeManualEvent(db, "2026-09-27", "ai:1");
+    expect(gym(back)).toBe("15:00");
   });
 });

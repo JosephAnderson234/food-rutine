@@ -1,5 +1,6 @@
 "use client";
 
+import { WeekAssistant } from "@app/components/assistant/WeekAssistant";
 import { useToday, useWeek } from "@app/data/hooks";
 import { addDays, formatDuration, startOfWeek } from "@app/domain/dates";
 import { buildDayViews, summarizeWeek } from "@app/domain/week-view";
@@ -94,7 +95,7 @@ export function WeekView() {
   }
   if (!today || !weekStart || !data) return <Skeleton />;
 
-  const { plan, events, catalog, settings, templates } = data;
+  const { plan, events, catalog, settings, templates, manual } = data;
   const days = buildDayViews(plan, events, catalog, settings, today);
   const summary = summarizeWeek(plan);
   const templateName = templates.get(plan.templateId)?.name ?? plan.templateId;
@@ -163,6 +164,14 @@ export function WeekView() {
           </div>
         </header>
 
+        <WeekAssistant
+          key={`assistant-${weekStart}`}
+          weekStart={weekStart}
+          today={today}
+          events={events}
+          manual={manual}
+        />
+
         <section
           aria-label="Resumen"
           className="grid grid-cols-2 gap-2 sm:grid-cols-4"
@@ -213,7 +222,7 @@ export function WeekView() {
         )}
 
         <motion.section
-          key={weekStart}
+          key={`days-${weekStart}`}
           aria-label="Días"
           className="space-y-3"
           initial="hidden"
