@@ -18,6 +18,7 @@ import {
   setCheck,
   setInventory,
   timerKey,
+  timersOn,
   updateSettings,
   weekEvents,
 } from "./repo";
@@ -195,5 +196,29 @@ describe("repo", () => {
     ).toBe(true);
     const back = await removeManualEvent(db, "2026-09-27", "ai:1");
     expect(gym(back)).toBe("15:00");
+  });
+
+  it("lista los temporizadores del día de todas las sesiones", async () => {
+    await setCheck(
+      db,
+      "2026-09-27",
+      `cook:prep-dom:${timerKey("arroz:cocinar", 35)}`,
+      true,
+    );
+    await setCheck(
+      db,
+      "2026-09-27",
+      `cook:prep-dom:${timerKey("pollo:saltear#2", 8)}`,
+      true,
+    );
+    await setCheck(db, "2026-09-27", "cook:prep-dom:pollo:cortar", true);
+    const timers = await timersOn(db, "2026-09-27");
+    expect(timers.map((t) => [t.prepId, t.stepId, t.minutes])).toEqual(
+      expect.arrayContaining([
+        ["prep-dom", "arroz:cocinar", 35],
+        ["prep-dom", "pollo:saltear#2", 8],
+      ]),
+    );
+    expect(timers).toHaveLength(2);
   });
 });

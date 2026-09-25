@@ -1,4 +1,5 @@
 import { BottomNav } from "@app/components/nav/BottomNav";
+import { PwaRuntime } from "@app/components/pwa/PwaRuntime";
 import type { Metadata, Viewport } from "next";
 import {
   Bricolage_Grotesque,
@@ -26,6 +27,8 @@ const mono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: { default: "Meal Prep", template: "%s · Meal Prep" },
+  applicationName: "Meal Prep",
+  appleWebApp: { capable: true, title: "Meal Prep", statusBarStyle: "default" },
   description:
     "Horario → comidas → compras → preparación → almacenamiento → mochila → gym.",
 };
@@ -48,6 +51,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <BottomNav />
+        <PwaRuntime />
       </body>
     </html>
   );

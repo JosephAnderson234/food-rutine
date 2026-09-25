@@ -331,3 +331,28 @@ export async function resetCook(
   );
   await db.checks.bulkDelete(ids);
 }
+
+export interface DayTimer extends TimerState {
+  prepId: string;
+}
+
+/** Todos los temporizadores de cocina del día (para avisar desde cualquier pantalla). */
+export async function timersOn(
+  db: MealPrepDB,
+  date: ISODate,
+): Promise<DayTimer[]> {
+  const rows = await db.checks.where("date").equals(date).toArray();
+  const re = new RegExp(`^${date}:cook:([^:]+):timer:(.+):([0-9]+)$`);
+  return rows.flatMap((r) => {
+    const m = re.exec(r.id);
+    if (!m) return [];
+    return [
+      {
+        prepId: m[1],
+        stepId: m[2],
+        minutes: Number(m[3]),
+        startedAt: Date.parse(r.checkedAt),
+      },
+    ];
+  });
+}

@@ -24,6 +24,7 @@ import {
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useState } from "react";
+import { AppSection } from "./AppSection";
 
 const ROLE_LABEL: Record<CalendarRole, string> = {
   fixed: "Fijo",
@@ -459,6 +460,8 @@ export function SettingsView() {
           </p>
         )}
       </section>
+
+      <AppSection />
     </div>
   );
 }

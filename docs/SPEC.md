@@ -115,7 +115,8 @@ Sincronización en la nube multi-dispositivo · notificaciones push (por ahora s
 - ✅ Gel packs opcionales (ajuste `coldPacks`, 0 por defecto): sin ellos no hay tareas de congelarlos y la mochila avisa las horas fuera de la refri (regla de 2 h).
 - ✅ Tareas cortas (descongelar, congelar, lonchera) → **Todoist** (API v1 desde el navegador, token en IndexedDB, proyecto «Meal Prep», con hora y aviso; lo tachado no se recrea). Google Tasks descartado: su API no guarda la hora. Sin Todoist, van a Calendar como recordatorio de 0 min.
 - ✅ Paso 8a: Asistente con Groq (`/api/ai`, `openai/gpt-oss-120b`, salida estructurada estricta): «¿Cambió algo esta semana?» (texto → bloques ocupados → el motor reubica gym/prep) e inventario por texto (→ cambios con vista previa). La IA solo traduce; siempre hay confirmación. Key solo en servidor (`GROQ_API_KEY`), la ruta rechaza otros orígenes.
-- ⏭️ Siguiente: 8b (variantes de platos, plantillas nuevas) y PWA.
+- ✅ Paso 9: PWA — manifest + íconos propios (`scripts/icons.mjs`), service worker manual (`public/sw.js`: páginas red→caché con precarga de las 5 pantallas, estáticos caché primero, `/api` nunca), aviso de versión nueva, instalación, almacenamiento persistente, avisos de temporizador globales (`TimerWatcher`) con la app abierta. Solo en producción.
+- ⏭️ Siguiente: 8b (variantes de platos, plantillas nuevas). Análisis de backend: `docs/BACKEND_NEST.md`.
 
 ## 11. Identidad visual
 

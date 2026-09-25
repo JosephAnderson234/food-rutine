@@ -10,7 +10,7 @@ import {
 } from "@app/domain/cook";
 import { formatDuration } from "@app/domain/dates";
 import type { EquipmentId, Heat } from "@app/domain/types";
-import { ring, useWakeLock } from "@app/lib/device";
+import { useWakeLock } from "@app/lib/device";
 import {
   ArrowLeft,
   ArrowRight,
@@ -26,7 +26,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 const EQUIPMENT_LABEL: Record<EquipmentId, string> = {
   arrocera: "Arrocera",
@@ -204,7 +204,6 @@ export function GuideMode({
   const [index, setIndex] = useState(startIndex);
   const [direction, setDirection] = useState(1);
   const [nowMs, setNowMs] = useState(() => Date.now());
-  const alerted = useRef(new Set<string>());
   useWakeLock(true);
 
   useEffect(() => {
@@ -213,16 +212,6 @@ export function GuideMode({
   }, []);
 
   const views = timerViews(timers, steps, nowMs);
-  useEffect(() => {
-    for (const t of timers) {
-      const key = `${t.stepId}:${t.minutes}`;
-      const overdueMs = nowMs - (t.startedAt + t.minutes * 60_000);
-      if (overdueMs < 0 || alerted.current.has(key)) continue;
-      alerted.current.add(key);
-      // Solo suena si terminó hace poco: al reabrir la guía no suenan avisos viejos.
-      if (overdueMs < 2 * 60_000) ring();
-    }
-  });
 
   const go = (to: number) => {
     setDirection(to > index ? 1 : -1);
