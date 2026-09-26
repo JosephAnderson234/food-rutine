@@ -103,7 +103,10 @@ export function WeekAssistant({
   };
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-line bg-panel">
+    <section
+      data-tour="assistant"
+      className="overflow-hidden rounded-3xl border border-line bg-panel"
+    >
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

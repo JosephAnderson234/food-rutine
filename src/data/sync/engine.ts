@@ -115,6 +115,8 @@ async function applyRemote(
   const tables = [...new Set(valid.map((c) => c.collection))].map((n) =>
     db.table(n),
   );
+  // Documentos donde se conservó algo local (p. ej. el token): hay que volver a subirlos.
+  const reupload: OutboxEntry[] = [];
   await db.transaction("rw", tables, async (tx) => {
     markRemote(tx.idbtrans);
     for (const c of valid) {
@@ -126,12 +128,22 @@ async function applyRemote(
         await table.delete(c.docId);
       } else {
         const local = (await table.get(c.docId)) as Doc | undefined;
-        await table.put(
-          fromRemote(c.collection as SyncedTable, c.data as Doc, local),
+        const merged = fromRemote(
+          c.collection as SyncedTable,
+          c.data as Doc,
+          local,
         );
+        await table.put(merged);
+        if (merged !== c.data)
+          reupload.push({
+            collection: c.collection as SyncedTable,
+            docId: c.docId,
+            at: new Date().toISOString(),
+          });
       }
     }
   });
+  if (reupload.length > 0) await db.outbox.bulkAdd(reupload);
   return seen;
 }
 
@@ -203,6 +215,7 @@ export async function linkDevice(
 
   await setMeta(db, "cursor", "0");
   await pullChanges(db, api);
+  await pushOutbox(db, api); // lo conservado al bajar (token sin subir)
   await setMeta(db, "linked", "1");
 }
 
@@ -221,6 +234,7 @@ export function syncOnce(
       else {
         await pushOutbox(db, api);
         await pullChanges(db, api);
+        await pushOutbox(db, api);
       }
       await setMeta(db, "lastSyncAt", new Date().toISOString());
     } finally {

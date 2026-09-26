@@ -1,5 +1,6 @@
 "use client";
 
+import { requestTour } from "@app/lib/onboarding";
 import {
   canPromptInstall,
   isIOS,
@@ -15,11 +16,13 @@ import {
 import {
   Bell,
   CheckCircle,
+  Compass,
   DeviceMobile,
   HardDrives,
   ShareNetwork,
   WifiSlash,
 } from "@phosphor-icons/react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 function Row({
@@ -61,6 +64,7 @@ const btn =
   "shrink-0 rounded-full bg-text px-3 py-1.5 text-xs font-semibold text-bg";
 
 export function AppSection() {
+  const router = useRouter();
   const [standalone, setStandalone] = useState(false);
   const [ios, setIos] = useState(false);
   const [installable, setInstallable] = useState(false);
@@ -84,6 +88,23 @@ export function AppSection() {
     <section className="space-y-2 rounded-3xl border border-line bg-panel p-4">
       <h2 className="text-xl font-semibold">App</h2>
       <ul className="divide-y divide-line">
+        <Row
+          icon={Compass}
+          title="Recorrido guiado"
+          detail="Vuelve a ver para qué sirve cada parte de la app."
+          action={
+            <button
+              type="button"
+              className={btn}
+              onClick={() => {
+                requestTour();
+                router.push("/semana");
+              }}
+            >
+              Ver
+            </button>
+          }
+        />
         <Row
           icon={DeviceMobile}
           title="Instalar en el celular"

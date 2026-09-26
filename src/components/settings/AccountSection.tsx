@@ -38,7 +38,7 @@ function isDark(): boolean {
 }
 
 /** Botón oficial de Google (Sign in with Google): entrega el ID token para el backend. */
-function GoogleButton({
+export function GoogleButton({
   onCredential,
 }: {
   onCredential: (credential: string) => void;

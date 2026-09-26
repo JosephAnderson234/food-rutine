@@ -258,6 +258,27 @@ describe("enlace: el orden de inicio de sesión no importa", () => {
 });
 
 describe("token de Todoist", () => {
+  it("el token guardado antes del login llega a la cuenta aunque sus ajustes sean más nuevos", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const server = fakeServer();
+    vi.setSystemTime(new Date("2026-09-20T10:00:00Z"));
+    const laptop = await device();
+    await updateSettings(laptop, { todoist: { token: "tok_local" } });
+    vi.setSystemTime(new Date("2026-09-21T10:00:00Z"));
+    const phone = await device();
+    await updateSettings(phone, { coldPacks: 3 }); // ajustes más nuevos, sin token
+    await linkDevice(phone, server.api);
+    vi.setSystemTime(new Date("2026-09-22T10:00:00Z"));
+    await linkDevice(laptop, server.api);
+    await syncOnce(phone, server.api);
+    for (const db of [laptop, phone]) {
+      const s = await db.settings.get("default");
+      expect(s?.todoist?.token).toBe("tok_local");
+      expect(s?.coldPacks).toBe(3);
+    }
+    vi.useRealTimers();
+  });
+
   it("viaja con los ajustes (el backend lo cifra)", () => {
     const local = { id: "default", todoist: { token: "tok", projectId: "p" } };
     expect(toRemote("settings", local)).toEqual(local);

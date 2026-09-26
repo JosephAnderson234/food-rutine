@@ -440,7 +440,7 @@ export function SettingsView() {
             />
             <p className="text-[11px] text-muted">
               Todoist → Ajustes → Integraciones → Desarrollador → «Copiar token
-              de API». Se guarda solo en este navegador.
+              de API». Con tu cuenta viaja cifrado a tus otros dispositivos.
             </p>
             <button
               type="submit"

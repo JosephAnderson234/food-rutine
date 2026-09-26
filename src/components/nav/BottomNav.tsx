@@ -20,6 +20,7 @@ const ITEMS: { href: string; label: string; icon: Icon; ready: boolean }[] = [
 
 export function BottomNav() {
   const pathname = usePathname();
+  if (pathname === "/bienvenida") return null;
   return (
     <nav
       aria-label="Principal"
@@ -53,6 +54,7 @@ export function BottomNav() {
               {ready ? (
                 <Link
                   href={href}
+                  data-tour={`nav-${href.slice(1)}`}
                   aria-current={active ? "page" : undefined}
                   className={`${base} ${active ? "text-accent" : "text-muted hover:text-text"}`}
                 >

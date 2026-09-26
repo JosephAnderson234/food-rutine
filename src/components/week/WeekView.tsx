@@ -1,6 +1,8 @@
 "use client";
 
 import { WeekAssistant } from "@app/components/assistant/WeekAssistant";
+import { AccountNudge } from "@app/components/onboarding/AccountNudge";
+import { TourLauncher } from "@app/components/onboarding/TourLauncher";
 import { useToday, useWeek } from "@app/data/hooks";
 import { addDays, formatDuration, startOfWeek } from "@app/domain/dates";
 import { buildDayViews, summarizeWeek } from "@app/domain/week-view";
@@ -112,9 +114,10 @@ export function WeekView() {
 
   return (
     <MotionConfig reducedMotion="user">
+      <TourLauncher />
       <div className="space-y-6">
         <header className="flex items-end justify-between gap-3">
-          <div>
+          <div data-tour="week">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">
               {templateName}
             </p>
@@ -130,7 +133,12 @@ export function WeekView() {
             </p>
           </div>
           <div className="flex items-center gap-1.5">
-            <Link href="/ajustes" aria-label="Ajustes" className={navBtn}>
+            <Link
+              href="/ajustes"
+              aria-label="Ajustes"
+              data-tour="settings"
+              className={navBtn}
+            >
               <GearSix size={16} weight="bold" aria-hidden />
             </Link>
             <motion.button
@@ -164,6 +172,8 @@ export function WeekView() {
           </div>
         </header>
 
+        <AccountNudge />
+
         <WeekAssistant
           key={`assistant-${weekStart}`}
           weekStart={weekStart}
@@ -174,6 +184,7 @@ export function WeekView() {
 
         <section
           aria-label="Resumen"
+          data-tour="summary"
           className="grid grid-cols-2 gap-2 sm:grid-cols-4"
         >
           <Stat
@@ -224,6 +235,7 @@ export function WeekView() {
         <motion.section
           key={`days-${weekStart}`}
           aria-label="Días"
+          data-tour="days"
           className="space-y-3"
           initial="hidden"
           animate="show"

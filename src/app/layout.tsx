@@ -1,4 +1,5 @@
 import { BottomNav } from "@app/components/nav/BottomNav";
+import { FirstRunGate } from "@app/components/onboarding/FirstRunGate";
 import { PwaRuntime } from "@app/components/pwa/PwaRuntime";
 import { SyncRuntime } from "@app/components/pwa/SyncRuntime";
 import type { Metadata, Viewport } from "next";
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <BottomNav />
         <PwaRuntime />
         <SyncRuntime />
+        <FirstRunGate />
       </body>
     </html>
   );
