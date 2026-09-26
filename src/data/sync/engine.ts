@@ -155,30 +155,54 @@ export async function pullChanges(
 // ── Primer enlace de un dispositivo ─────────────────────────────────────────
 
 /**
- * Primera sincronización de este dispositivo:
- * - Si la cuenta ya tiene datos (de otro dispositivo), se adoptan; solo se suben
- *   los documentos locales que el servidor no tiene.
- * - Si la cuenta está vacía, se sube todo lo local.
+ * Primera sincronización de este dispositivo. El orden de inicio de sesión no importa:
+ * 1. Se rescatan tus cambios reales de antes del login (no los datos de ejemplo ni lo
+ *    generado automáticamente), con su hora.
+ * 2. Se baja la cuenta sin pisar esos cambios.
+ * 3. Se suben tus cambios con su hora real y, con hora 0, lo local que la cuenta no
+ *    tiene: cualquier cambio real de otro dispositivo le gana. El servidor decide (LWW).
+ * 4. Se vuelve a bajar todo para quedar idéntico a la cuenta.
  */
 export async function linkDevice(
   db: MealPrepDB,
   api: Pick<AuthedApi, "push" | "pull">,
 ): Promise<void> {
-  // Lo anotado antes de iniciar sesión (datos de ejemplo) no debe pisar la cuenta.
+  const edits = new Map<string, OutboxEntry>();
+  for (const e of await db.outbox.orderBy("seq").toArray()) {
+    if (e.origin === "system") continue;
+    const ids =
+      e.docId === "*"
+        ? (await db.table(e.collection).toCollection().primaryKeys()).map(
+            String,
+          )
+        : [e.docId];
+    for (const docId of ids) {
+      const key = keyOf(e.collection, docId);
+      const prev = edits.get(key);
+      if (!prev || prev.at <= e.at)
+        edits.set(key, { collection: e.collection, docId, at: e.at });
+    }
+  }
   await db.outbox.clear();
+  if (edits.size > 0) await db.outbox.bulkAdd([...edits.values()]);
+
   await db.meta.delete("cursor");
   const onServer = await pullChanges(db, api);
 
-  const now = new Date().toISOString();
+  const epoch = new Date(0).toISOString();
   const missing: OutboxEntry[] = [];
   for (const name of SYNCED_TABLES) {
     for (const k of await db.table(name).toCollection().primaryKeys()) {
-      if (!onServer.has(keyOf(name, String(k))))
-        missing.push({ collection: name, docId: String(k), at: now });
+      const key = keyOf(name, String(k));
+      if (!onServer.has(key) && !edits.has(key))
+        missing.push({ collection: name, docId: String(k), at: epoch });
     }
   }
   if (missing.length > 0) await db.outbox.bulkAdd(missing);
   await pushOutbox(db, api);
+
+  await setMeta(db, "cursor", "0");
+  await pullChanges(db, api);
   await setMeta(db, "linked", "1");
 }
 

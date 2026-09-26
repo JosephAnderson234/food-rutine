@@ -21,6 +21,7 @@ import {
   INGREDIENTS,
   WEEK_TEMPLATES,
 } from "./seed";
+import { markSystem } from "./sync/tracking";
 
 /** Carga los datos iniciales solo si la base está vacía (no pisa ediciones del usuario). */
 export async function seedIfEmpty(db: MealPrepDB): Promise<boolean> {
@@ -34,7 +35,9 @@ export async function seedIfEmpty(db: MealPrepDB): Promise<boolean> {
       db.fixedCourses,
       db.settings,
     ],
-    async () => {
+    async (tx) => {
+      // Datos de ejemplo: no cuentan como cambios del usuario al enlazar la cuenta.
+      markSystem(tx.idbtrans);
       if ((await db.settings.count()) > 0) return false;
       await db.ingredients.bulkPut(INGREDIENTS);
       await db.components.bulkPut(COMPONENTS);
@@ -173,7 +176,9 @@ export async function regenerateWeek(
     settings,
     events: await weekEvents(db, weekStart),
   });
-  return db.transaction("rw", [db.weeks, db.portions], async () => {
+  return db.transaction("rw", [db.weeks, db.portions], async (tx) => {
+    // Plan generado por la app (lo que hace el usuario sobre porciones sí cuenta).
+    markSystem(tx.idbtrans);
     const prev = await db.portions
       .where("weekStart")
       .equals(weekStart)

@@ -34,6 +34,8 @@ export interface OutboxEntry {
   collection: SyncedTable;
   docId: string;
   at: string;
+  /** "system": lo escribió la app (datos iniciales, planes generados), no el usuario. */
+  origin?: "system";
 }
 
 const tracked = new Set<string>(SYNCED_TABLES);
@@ -42,6 +44,15 @@ const tracked = new Set<string>(SYNCED_TABLES);
 const remoteTransactions = new WeakSet<object>();
 export function markRemote(trans: object): void {
   remoteTransactions.add(trans);
+}
+
+/**
+ * Transacciones de la propia app (datos de ejemplo, planes generados): se anotan igual,
+ * pero al enlazar un dispositivo no cuentan como cambios del usuario.
+ */
+const systemTransactions = new WeakSet<object>();
+export function markSystem(trans: object): void {
+  systemTransactions.add(trans);
 }
 
 type Listener = () => void;
@@ -108,11 +119,15 @@ export const syncTracking: Middleware<DBCore> = {
             const keys = keysOf(req, res);
             if (keys !== "*" && keys.length === 0) return res;
             const at = new Date().toISOString();
+            const system = systemTransactions.has(
+              req.trans as DBCoreTransaction,
+            );
             const values: OutboxEntry[] = (keys === "*" ? ["*"] : keys).map(
               (docId) => ({
                 collection: name as SyncedTable,
                 docId,
                 at,
+                ...(system ? { origin: "system" as const } : {}),
               }),
             );
             await down

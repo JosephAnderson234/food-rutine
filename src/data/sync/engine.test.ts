@@ -4,7 +4,7 @@ import type {
   PulledChange,
   RemoteChange,
 } from "@app/integrations/backend/api";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MealPrepDB } from "../db";
 import {
   actOnPortion,
@@ -170,16 +170,90 @@ describe("sincronización entre dispositivos", () => {
     expect(await pendingCount(laptop)).toBe(0);
   });
 
-  it("enlazar un dispositivo borra lo anotado antes de iniciar sesión", async () => {
+  it("enlazar un dispositivo sube lo anotado antes de iniciar sesión", async () => {
     const server = fakeServer();
     const phone = await device();
     await syncOnce(phone, server.api);
     const laptop = await device();
     await setInventory(laptop, "pan", 3);
     await linkDevice(laptop, server.api);
-    // "pan" no estaba en el servidor: se sube una vez.
     expect(server.docs.get("inventory|pan")).toBeDefined();
     expect(await pendingCount(laptop)).toBe(0);
+  });
+});
+
+describe("enlace: el orden de inicio de sesión no importa", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+  const at = (iso: string) => vi.setSystemTime(new Date(iso));
+  const qty = async (db: MealPrepDB, id: string) =>
+    (await db.inventory.get(id))?.qty;
+
+  it("un dispositivo nuevo que entra primero no pisa tus datos reales", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const server = fakeServer();
+    at("2026-09-20T10:00:00Z");
+    const real = await device();
+    await setInventory(real, "arroz", 5);
+    await updateSettings(real, { coldPacks: 2 }); // pisa un documento de ejemplo
+    at("2026-09-25T10:00:00Z");
+    const fresh = await device(); // datos de ejemplo, sin tocar
+    await linkDevice(fresh, server.api);
+    await linkDevice(real, server.api);
+    await syncOnce(fresh, server.api);
+    for (const db of [real, fresh]) {
+      expect(await qty(db, "arroz")).toBe(5);
+      expect((await db.settings.get("default"))?.coldPacks).toBe(2);
+    }
+  });
+
+  it("si tu dispositivo real entra primero, el nuevo adopta la cuenta", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const server = fakeServer();
+    at("2026-09-20T10:00:00Z");
+    const real = await device();
+    await setInventory(real, "arroz", 5);
+    await linkDevice(real, server.api);
+    at("2026-09-25T10:00:00Z");
+    const fresh = await device();
+    await linkDevice(fresh, server.api);
+    expect(await qty(fresh, "arroz")).toBe(5);
+  });
+
+  it("cambios en documentos distintos de ambos lados se conservan", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const server = fakeServer();
+    at("2026-09-20T10:00:00Z");
+    const a = await device();
+    const b = await device();
+    await setInventory(a, "arroz", 5);
+    at("2026-09-20T11:00:00Z");
+    await setInventory(b, "pan", 2);
+    await linkDevice(a, server.api);
+    await linkDevice(b, server.api);
+    await syncOnce(a, server.api);
+    for (const db of [a, b]) {
+      expect(await qty(db, "arroz")).toBe(5);
+      expect(await qty(db, "pan")).toBe(2);
+    }
+  });
+
+  it("el mismo documento editado en ambos antes del login: gana el más reciente", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const server = fakeServer();
+    at("2026-09-20T10:00:00Z");
+    const a = await device();
+    const b = await device();
+    await setInventory(b, "arroz", 1);
+    at("2026-09-20T12:00:00Z");
+    await setInventory(a, "arroz", 7);
+    // El más antiguo entra después: igual pierde.
+    await linkDevice(a, server.api);
+    await linkDevice(b, server.api);
+    await syncOnce(a, server.api);
+    expect(await qty(a, "arroz")).toBe(7);
+    expect(await qty(b, "arroz")).toBe(7);
   });
 });
 
