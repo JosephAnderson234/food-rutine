@@ -18,29 +18,31 @@ const synced = new Set<string>(SYNCED_TABLES);
 
 type Doc = Record<string, unknown>;
 
-/** Lo que sale del dispositivo. El token de Todoist (secreto de un tercero) no se sube. */
-export function toRemote(collection: SyncedTable, row: Doc): Doc {
-  if (
-    collection === "settings" &&
-    row.todoist &&
-    typeof row.todoist === "object"
-  ) {
-    const { token: _secret, ...todoist } = row.todoist as Doc;
-    return { ...row, todoist };
-  }
+/**
+ * Lo que sale del dispositivo. El token de Todoist viaja con los ajustes (por HTTPS) y el
+ * backend lo guarda cifrado, así tu cuenta lo lleva a todos tus dispositivos.
+ */
+export function toRemote(_collection: SyncedTable, row: Doc): Doc {
   return row;
 }
 
-/** Lo que llega: conserva el token de Todoist que tenga este dispositivo. */
+/**
+ * Lo que llega: manda el token de la cuenta; si la cuenta no tiene uno (ajustes subidos
+ * antes de sincronizar tokens), se conserva el de este dispositivo.
+ */
 export function fromRemote(
   collection: SyncedTable,
   data: Doc,
   local: Doc | undefined,
 ): Doc {
   if (collection === "settings") {
-    const token = (local?.todoist as Doc | undefined)?.token;
-    if (token)
-      return { ...data, todoist: { ...((data.todoist as Doc) ?? {}), token } };
+    const remoteToken = (data.todoist as Doc | undefined)?.token;
+    const localToken = (local?.todoist as Doc | undefined)?.token;
+    if (!remoteToken && localToken)
+      return {
+        ...data,
+        todoist: { ...((data.todoist as Doc) ?? {}), token: localToken },
+      };
   }
   return data;
 }

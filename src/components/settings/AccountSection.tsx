@@ -31,6 +31,12 @@ function ago(iso: string | null): string {
   return h < 24 ? `hace ${h} h` : `hace ${Math.round(h / 24)} d`;
 }
 
+function isDark(): boolean {
+  const forced = document.documentElement.dataset.theme;
+  if (forced) return forced === "dark";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
 /** Botón oficial de Google (Sign in with Google): entrega el ID token para el backend. */
 function GoogleButton({
   onCredential,
@@ -38,6 +44,9 @@ function GoogleButton({
   onCredential: (credential: string) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  // El callback cambia en cada render; el botón se dibuja una sola vez.
+  const callback = useRef(onCredential);
+  callback.current = onCredential;
   const [failed, setFailed] = useState(false);
   useEffect(() => {
     let cancelled = false;
@@ -47,11 +56,11 @@ function GoogleButton({
         if (cancelled || !id || !ref.current) return;
         id.initialize({
           client_id: GOOGLE_CLIENT_ID,
-          callback: (r) => onCredential(r.credential),
+          callback: (r) => callback.current(r.credential),
           cancel_on_tap_outside: true,
         });
         id.renderButton(ref.current, {
-          theme: "outline",
+          theme: isDark() ? "filled_black" : "outline",
           size: "large",
           text: "signin_with",
           shape: "pill",
@@ -62,14 +71,18 @@ function GoogleButton({
     return () => {
       cancelled = true;
     };
-  }, [onCredential]);
+  }, []);
   if (failed)
     return (
       <p className="text-sm text-danger">
         No se pudo cargar Google (¿sin conexión?).
       </p>
     );
-  return <div ref={ref} className="min-h-10" />;
+  // El iframe de Google es de esquema claro: si el contenedor está en oscuro,
+  // Chrome le pone un fondo blanco opaco. Con el mismo esquema, queda transparente.
+  return (
+    <div ref={ref} className="min-h-10" style={{ colorScheme: "light" }} />
+  );
 }
 
 function PushRow() {
@@ -266,7 +279,8 @@ export function AccountSection() {
                 className="text-good"
                 aria-hidden
               />
-              Tu token de Todoist no se sube: queda en cada dispositivo.
+              Google Calendar, Todoist y ajustes viajan con tu cuenta (tokens
+              cifrados).
             </span>
             <button
               type="button"

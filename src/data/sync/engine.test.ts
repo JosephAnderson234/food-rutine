@@ -183,22 +183,44 @@ describe("sincronización entre dispositivos", () => {
   });
 });
 
-describe("transformaciones", () => {
-  it("el token de Todoist no sale del dispositivo y se conserva al recibir ajustes", () => {
-    const local = {
-      id: "default",
-      todoist: { token: "secreto", projectId: "p" },
-    };
-    const out = toRemote("settings", local);
-    expect(JSON.stringify(out)).not.toContain("secreto");
+describe("token de Todoist", () => {
+  it("viaja con los ajustes (el backend lo cifra)", () => {
+    const local = { id: "default", todoist: { token: "tok", projectId: "p" } };
+    expect(toRemote("settings", local)).toEqual(local);
+  });
+
+  it("al recibir, manda el token de la cuenta", () => {
+    const back = fromRemote(
+      "settings",
+      { id: "default", todoist: { token: "de-la-cuenta" } },
+      { id: "default", todoist: { token: "viejo" } },
+    );
+    expect((back.todoist as { token: string }).token).toBe("de-la-cuenta");
+  });
+
+  it("si la cuenta no tiene token, conserva el del dispositivo", () => {
     const back = fromRemote(
       "settings",
       { id: "default", todoist: { projectId: "p2" } },
-      local,
+      { id: "default", todoist: { token: "local" } },
     );
     expect(back).toEqual({
       id: "default",
-      todoist: { projectId: "p2", token: "secreto" },
+      todoist: { projectId: "p2", token: "local" },
     });
+  });
+
+  it("se sincroniza entre dispositivos", async () => {
+    const server = fakeServer();
+    const phone = await device();
+    await syncOnce(phone, server.api);
+    const laptop = await device();
+    await syncOnce(laptop, server.api);
+    await updateSettings(laptop, { todoist: { token: "tok_laptop" } });
+    await syncOnce(laptop, server.api);
+    await syncOnce(phone, server.api);
+    expect((await phone.settings.get("default"))?.todoist?.token).toBe(
+      "tok_laptop",
+    );
   });
 });
