@@ -11,6 +11,7 @@ import type {
 } from "@app/domain/types";
 import Dexie, { type EntityTable } from "dexie";
 import { ASSEMBLIES, COMPONENTS, INGREDIENTS, WEEK_TEMPLATES } from "./seed";
+import { type OutboxEntry, syncTracking } from "./sync/tracking";
 
 /** Plan guardado sin las porciones: esas viven en su propia tabla porque cambian de estado. */
 export type StoredWeek = Omit<WeekPlan, "portions"> & { generatedAt: string };
@@ -46,6 +47,27 @@ export interface TodoSentRow {
 /** Compromiso agregado desde la app (p. ej. por la IA): bloquea horario esa semana. */
 export type ManualEvent = ScheduleEvent & { weekStart: string };
 
+/** Sesión con el backend (un registro, id "current"). */
+export interface SessionRow {
+  id: "current";
+  accessToken: string;
+  refreshToken: string;
+  /** Epoch ms en que vence el access token. */
+  accessExpiresAt: number;
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+    pictureUrl: string | null;
+  };
+}
+
+/** Pares clave/valor de la sincronización (cursor, última sincronización…). */
+export interface MetaRow {
+  key: string;
+  value: string;
+}
+
 /** Casilla marcada del día: tareas de la agenda e ítems de la mochila. */
 export interface DayCheck {
   /** `${date}:task:${taskId}` o `${date}:pack:${itemId}` */
@@ -69,6 +91,9 @@ export class MealPrepDB extends Dexie {
   calendarCache!: EntityTable<CalendarCache, "weekStart">;
   todoSent!: EntityTable<TodoSentRow, "key">;
   manualEvents!: EntityTable<ManualEvent, "id">;
+  outbox!: EntityTable<OutboxEntry, "seq">;
+  meta!: EntityTable<MetaRow, "key">;
+  session!: EntityTable<SessionRow, "id">;
 
   constructor(name = "meal-prep") {
     super(name);
@@ -121,6 +146,14 @@ export class MealPrepDB extends Dexie {
     this.version(7).stores({ todoSent: "key, weekStart" });
     // v8: compromisos agregados en la app.
     this.version(8).stores({ manualEvents: "id, weekStart" });
+    // v9: sincronización con el backend (bandeja de salida, metadatos y sesión).
+    this.version(9).stores({
+      outbox: "++seq, collection",
+      meta: "key",
+      session: "id",
+    });
+    // Anota en el outbox cada escritura en tablas sincronizadas.
+    this.use(syncTracking);
   }
 }
 

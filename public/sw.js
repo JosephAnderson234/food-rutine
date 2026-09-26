@@ -4,7 +4,7 @@
  * - /api/*: siempre red (la IA necesita internet).
  * Subir VERSION invalida las cachés anteriores.
  */
-const VERSION = "v1";
+const VERSION = "v2";
 const STATIC_CACHE = `static-${VERSION}`;
 const PAGES_CACHE = `pages-${VERSION}`;
 const PAGES = ["/hoy", "/semana", "/compras", "/cocina", "/ajustes"];
@@ -99,6 +99,26 @@ self.addEventListener("fetch", (event) => {
   }
   event.respondWith(
     networkFirst(request, { navigate: request.mode === "navigate" }),
+  );
+});
+
+// Avisos push del backend (llegan aunque la app esté cerrada).
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { title: event.data ? event.data.text() : "" };
+  }
+  const title = data.title || "Meal Prep";
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: data.body || "",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      tag: title,
+      data: { url: data.url || "/hoy" },
+    }),
   );
 });
 

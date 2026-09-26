@@ -24,6 +24,7 @@ import {
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useState } from "react";
+import { AccountSection } from "./AccountSection";
 import { AppSection } from "./AppSection";
 
 const ROLE_LABEL: Record<CalendarRole, string> = {
@@ -153,6 +154,8 @@ export function SettingsView() {
         </Link>
         <h1 className="text-5xl leading-[0.9] font-bold">Ajustes</h1>
       </header>
+
+      <AccountSection />
 
       <section className="space-y-3 rounded-3xl border border-line bg-panel p-4">
         <div className="flex items-start gap-3">

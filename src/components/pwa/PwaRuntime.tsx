@@ -4,6 +4,7 @@ import { getDB } from "@app/data/db";
 import { useToday } from "@app/data/hooks";
 import { timersOn } from "@app/data/repo";
 import { ring } from "@app/lib/device";
+import { pushState } from "@app/lib/push";
 import {
   captureInstallPrompt,
   isStandalone,
@@ -86,10 +87,14 @@ function TimerWatcher() {
         if (alerted.current.has(key)) return;
         alerted.current.add(key);
         ring();
-        void notify(
-          `Listo: ${comp?.name ?? "temporizador"}`,
-          task ? `${task.label} · ${t.minutes} min` : `${t.minutes} min`,
-        );
+        // Con push activo el backend ya manda la notificación: aquí solo suena.
+        void pushState().then((state) => {
+          if (state === "on") return;
+          void notify(
+            `Listo: ${comp?.name ?? "temporizador"}`,
+            task ? `${task.label} · ${t.minutes} min` : `${t.minutes} min`,
+          );
+        });
       };
       const wait = endsAt - Date.now();
       // Los que terminaron hace más de 2 min (p. ej. al reabrir la app) no suenan.

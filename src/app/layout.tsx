@@ -1,5 +1,6 @@
 import { BottomNav } from "@app/components/nav/BottomNav";
 import { PwaRuntime } from "@app/components/pwa/PwaRuntime";
+import { SyncRuntime } from "@app/components/pwa/SyncRuntime";
 import type { Metadata, Viewport } from "next";
 import {
   Bricolage_Grotesque,
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </main>
         <BottomNav />
         <PwaRuntime />
+        <SyncRuntime />
       </body>
     </html>
   );
