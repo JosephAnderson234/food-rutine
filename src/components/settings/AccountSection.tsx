@@ -3,6 +3,7 @@
 import { getDB } from "@app/data/db";
 import { backend } from "@app/data/session";
 import { useAccount } from "@app/data/use-account";
+import { API_CONFIGURED } from "@app/integrations/backend/api";
 import { GOOGLE_CLIENT_ID, loadGis } from "@app/integrations/google/gis";
 import {
   disablePush,
@@ -141,7 +142,13 @@ export function AccountSection() {
 
       {!a.session ? (
         <div className="space-y-2">
-          {GOOGLE_CLIENT_ID ? (
+          {!API_CONFIGURED ? (
+            <p className="text-sm text-warn">
+              Falta{" "}
+              <code className="font-mono text-xs">NEXT_PUBLIC_API_URL</code>:
+              configura la URL del backend para usar la cuenta.
+            </p>
+          ) : GOOGLE_CLIENT_ID ? (
             <GoogleButton
               onCredential={(c) => void a.signInWithCredential(c)}
             />

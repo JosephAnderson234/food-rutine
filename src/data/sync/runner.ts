@@ -1,7 +1,7 @@
 "use client";
 
 import { todayIn } from "@app/domain/dates";
-import { ApiError } from "@app/integrations/backend/api";
+import { API_CONFIGURED, ApiError } from "@app/integrations/backend/api";
 import { getDB } from "../db";
 import { backend, getSession } from "../session";
 import { syncOnce } from "./engine";
@@ -28,6 +28,7 @@ export function subscribeSyncStatus(fn: () => void): () => void {
 
 /** Un ciclo completo: datos (push → pull) y luego avisos. No hace nada sin sesión. */
 export async function runSync(): Promise<void> {
+  if (!API_CONFIGURED) return;
   const db = getDB();
   if (!(await getSession(db))) return;
   if (typeof navigator !== "undefined" && !navigator.onLine) {

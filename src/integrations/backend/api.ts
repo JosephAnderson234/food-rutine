@@ -1,8 +1,11 @@
 /** Cliente HTTP del backend (food-rutine-api). La sesión viaja en Authorization: Bearer. */
 
-export const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL ?? "https://api.tu-dominio.com"
-).replace(/\/$/, "");
+/** URL del backend; se configura por entorno (no se escribe en el código). */
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(
+  /\/$/,
+  "",
+);
+export const API_CONFIGURED = API_URL !== "";
 
 export class ApiError extends Error {
   constructor(
@@ -56,6 +59,12 @@ async function request<T>(
   init: RequestInit = {},
   token?: string,
 ): Promise<T> {
+  if (!API_CONFIGURED) {
+    throw new ApiError(
+      0,
+      "Falta NEXT_PUBLIC_API_URL: el backend no está configurado.",
+    );
+  }
   let res: Response;
   try {
     res = await fetch(`${API_URL}${path}`, {
